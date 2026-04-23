@@ -60,22 +60,33 @@
       pointer-events:none;
     }
     .ecg-svg{
-      position:absolute;top:50%;
+      position:absolute;top:50%;left:0;
       transform:translateY(-50%);
       will-change:transform;
-      animation:ecgScroll 4s linear infinite;
+    }
+    /* cycle width = 140px → animation translates exactly one cycle */
+    .ecg-svg.playing{
+      animation:ecgScroll 3s linear infinite;
     }
     @keyframes ecgScroll{
       from{transform:translateY(-50%) translateX(0)}
-      to  {transform:translateY(-50%) translateX(-200px)}
+      to  {transform:translateY(-50%) translateX(-140px)}
+    }
+    /* faint baseline so the full line is always visible */
+    .ecg-base{
+      fill:none;
+      stroke:var(--cyan);
+      stroke-width:1;
+      opacity:.12;
+      transition:stroke 1s ease;
     }
     .ecg-path{
       fill:none;
       stroke:var(--cyan);
-      stroke-width:1.8;
+      stroke-width:2;
       stroke-linecap:round;
       stroke-linejoin:round;
-      opacity:.35;
+      opacity:.55;
       transition:stroke 1s ease, opacity .5s;
     }
 
@@ -388,7 +399,10 @@
 
   <!-- ECG animated background -->
   <div class="ecg-track" aria-hidden="true">
-    <svg class="ecg-svg" id="ecgSvg" height="60" viewBox="0 0 1000 60">
+    <svg class="ecg-svg" id="ecgSvg" height="60">
+      <!-- full-width faint baseline so the line is always visible -->
+      <line class="ecg-base" id="ecgBase" x1="0" y1="30" x2="9999" y2="30"/>
+      <!-- animated ECG waveform -->
       <path class="ecg-path" id="ecgPath"/>
     </svg>
   </div>
@@ -673,29 +687,49 @@ const RISK = {
    ECG WAVEFORM — built in JS, set on SVG path
 ═══════════════════════════════════════════════════════════════ */
 (function buildECG() {
-  /* One ECG cycle: 200px wide, canvas height 60, baseline y=40 */
-  const cycle = [
-    [0,40],[28,40],
-    [32,36],[36,29],[40,36],[44,40],   // P wave
-    [50,40],[53,45],[57,3],[62,54],[66,40], // QRS
-    [71,38],[75,30],[81,24],[87,32],[93,40], // T wave
-    [200,40]                           // baseline
+  /*
+   * Cycle width = 140px, height = 60, baseline = y=30.
+   * Denser waveform so the whole header is filled with visible spikes.
+   * SVG width = screen width + 2 extra cycles so there is never a gap.
+   */
+  const W  = 140;   // cycle width — must match CSS keyframe translateX
+  const BL = 30;    // baseline y
+  const cycle = [   // [x_offset, y_relative_to_baseline]
+    [0,0],[18,0],
+    [21,-3],[24,-8],[27,-3],[30,0],    // P wave
+    [35,0],[37,4],[40,-34],[44,10],[47,0], // QRS complex
+    [50,0],[53,-2],[56,-8],[60,-13],[64,-8],[68,0], // T wave
+    [W,0],                             // flat to next cycle
   ];
-  const N = 5; /* repeat 5 times → 1000px, animate -200px */
-  let d = '';
-  for (let c = 0; c < N; c++) {
-    cycle.forEach(([x,y], i) => {
-      const cmd = (c===0 && i===0) ? 'M' : 'L';
-      d += `${cmd}${c*200+x},${y} `;
-    });
+
+  function buildPath(cycles) {
+    let d = '';
+    for (let c = 0; c < cycles; c++) {
+      cycle.forEach(([x, dy], i) => {
+        const cmd = (c === 0 && i === 0) ? 'M' : 'L';
+        d += `${cmd}${c * W + x},${BL + dy} `;
+      });
+    }
+    return d.trim();
   }
-  document.getElementById('ecgPath').setAttribute('d', d.trim());
-  document.getElementById('ecgSvg').setAttribute('width', N * 200);
+
+  function init() {
+    const screenW = window.innerWidth;
+    const cycles  = Math.ceil(screenW / W) + 3; // extra cycles for seamless fill
+    const svg     = document.getElementById('ecgSvg');
+    svg.setAttribute('width',  cycles * W);
+    svg.setAttribute('viewBox',`0 0 ${cycles * W} 60`);
+    document.getElementById('ecgPath').setAttribute('d', buildPath(cycles));
+    svg.classList.add('playing');
+  }
+
+  init();
+  window.addEventListener('resize', init);
 })();
 
 function setECGColor(color) {
   document.querySelector('.ecg-path').style.stroke = color;
-  document.querySelector('.ecg-path').style.opacity = color === 'var(--cyan)' ? '.35' : '.55';
+  document.querySelector('.ecg-base').style.stroke = color;
 }
 
 /* ═══════════════════════════════════════════════════════════════
