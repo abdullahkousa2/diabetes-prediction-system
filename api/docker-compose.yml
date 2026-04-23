@@ -1,0 +1,13 @@
+version: "3.9"
+
+services:
+  diabetes-api:
+    build: .
+    container_name: diabetes_api
+    ports:
+      - "5000:5000"
+    volumes:
+      - ./models:/app/models
+    environment:
+      - FLASK_ENV=production
+    restart: unless-stopped

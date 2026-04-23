@@ -1,0 +1,12 @@
+__pycache__/
+*.py[cod]
+*.pyo
+.env
+.git
+.gitignore
+*.md
+*.ipynb
+*.csv
+*.npy
+.DS_Store
+Thumbs.db
