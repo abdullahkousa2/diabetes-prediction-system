@@ -26,7 +26,7 @@ dataset/X_test.npy
 dataset/y_train.npy
 dataset/y_test.npy
 
-# ── Intermediate model artifacts in dataset/ (API uses models/) ───
+# ── Intermediate model artifacts in dataset/ (models/ is canonical) ──
 dataset/*.pkl
 dataset/*.json
 
@@ -34,13 +34,13 @@ dataset/*.json
 dataset/archive*/
 
 # ── Gradio certificates ───────────────────────────────────────────
-api/.gradio/
+.gradio/
 
 # ── Old/draft folders ─────────────────────────────────────────────
 files (4)/
 diabetes_api/
 
-# ── OS files ─────────────────────────────────────────────────────
+# ── OS files ──────────────────────────────────────────────────────
 .DS_Store
 Thumbs.db
 desktop.ini
@@ -51,7 +51,7 @@ desktop.ini
 *.sublime-project
 *.sublime-workspace
 
-# ── Build / dist ─────────────────────────────────────────────────
+# ── Build / dist ──────────────────────────────────────────────────
 build/
 dist/
 *.egg-info/
