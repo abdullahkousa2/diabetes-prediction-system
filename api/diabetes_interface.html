@@ -8,567 +8,554 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
-    /* ── Design tokens ─────────────────────────────────────────── */
     :root {
-      --bg:           #060C1A;
-      --surface:      #0D1626;
-      --glass:        rgba(255,255,255,0.05);
-      --glass-hover:  rgba(255,255,255,0.08);
-      --glass-border: rgba(255,255,255,0.09);
-      --teal:         #0891B2;
-      --teal-lt:      #22D3EE;
-      --teal-glow:    rgba(8,145,178,0.20);
-      --text-1:       #F0FDFA;
-      --text-2:       #94A3B8;
-      --text-3:       #475569;
-      --high:         #EF4444;
-      --high-soft:    rgba(239,68,68,0.12);
-      --high-border:  rgba(239,68,68,0.28);
-      --mod:          #F97316;
-      --mod-soft:     rgba(249,115,22,0.12);
-      --mod-border:   rgba(249,115,22,0.28);
-      --low:          #22C55E;
-      --low-soft:     rgba(34,197,94,0.12);
-      --low-border:   rgba(34,197,94,0.28);
-      --r:            14px;
-      --r-sm:         9px;
-      --ease:         cubic-bezier(0.4,0,0.2,1);
+      --bg:        #030912;
+      --sur:       rgba(255,255,255,0.04);
+      --sur2:      rgba(255,255,255,0.07);
+      --brd:       rgba(255,255,255,0.08);
+      --brd2:      rgba(255,255,255,0.14);
+      --cyan:      #06B6D4;
+      --cyan-lt:   #67E8F9;
+      --cyan-glow: rgba(6,182,212,0.22);
+      --t1:        #E2F4FF;
+      --t2:        #94A3B8;
+      --t3:        #475569;
+      --hi:  #F43F5E; --hi-s: rgba(244,63,94,0.13);  --hi-b: rgba(244,63,94,0.28);
+      --mo:  #F97316; --mo-s: rgba(249,115,60,0.13);  --mo-b: rgba(249,115,60,0.28);
+      --lo:  #10B981; --lo-s: rgba(16,185,129,0.13);  --lo-b: rgba(16,185,129,0.28);
+      --r: 14px; --r-s: 9px; --ease: cubic-bezier(.4,0,.2,1);
+    }
+    *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+    html{scroll-behavior:smooth}
+    body{
+      font-family:'Figtree',system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--t1);
+      min-height:100vh;
+      -webkit-font-smoothing:antialiased;
+      overflow-x:hidden;
     }
 
-    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-    html { scroll-behavior: smooth; }
-
-    body {
-      font-family: 'Figtree', system-ui, sans-serif;
-      background: var(--bg);
-      color: var(--text-1);
-      min-height: 100vh;
-      -webkit-font-smoothing: antialiased;
+    /* ── Blood-cell canvas ─────────────────────────────── */
+    #bgCanvas{
+      position:fixed;inset:0;z-index:0;
+      pointer-events:none;opacity:.9;
     }
 
-    /* Ambient background orbs */
-    body::before, body::after {
-      content: '';
-      position: fixed;
-      border-radius: 50%;
-      pointer-events: none;
-      z-index: 0;
+    /* ── Header ────────────────────────────────────────── */
+    header{
+      position:sticky;top:0;z-index:50;
+      height:68px;
+      background:rgba(3,9,18,.82);
+      backdrop-filter:blur(24px);
+      -webkit-backdrop-filter:blur(24px);
+      border-bottom:1px solid var(--brd);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 2rem;
+      overflow:hidden;
     }
-    body::before {
-      width: 600px; height: 600px;
-      top: -200px; left: -150px;
-      background: radial-gradient(circle, rgba(8,145,178,0.07) 0%, transparent 70%);
+    /* ECG wave lives here as absolute background */
+    .ecg-track{
+      position:absolute;inset:0;overflow:hidden;
+      pointer-events:none;
     }
-    body::after {
-      width: 500px; height: 500px;
-      bottom: -150px; right: -100px;
-      background: radial-gradient(circle, rgba(34,197,94,0.05) 0%, transparent 70%);
+    .ecg-svg{
+      position:absolute;top:50%;
+      transform:translateY(-50%);
+      will-change:transform;
+      animation:ecgScroll 4s linear infinite;
     }
-
-    /* ── Header ────────────────────────────────────────────────── */
-    header {
-      position: sticky; top: 0; z-index: 50;
-      background: rgba(6,12,26,0.85);
-      backdrop-filter: blur(24px);
-      -webkit-backdrop-filter: blur(24px);
-      border-bottom: 1px solid var(--glass-border);
-      padding: 0 2rem;
-      height: 64px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
+    @keyframes ecgScroll{
+      from{transform:translateY(-50%) translateX(0)}
+      to  {transform:translateY(-50%) translateX(-200px)}
     }
-
-    .brand {
-      display: flex; align-items: center; gap: 0.85rem;
-    }
-    .brand-icon {
-      width: 38px; height: 38px;
-      border-radius: 10px;
-      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-lt) 100%);
-      display: flex; align-items: center; justify-content: center;
-      box-shadow: 0 0 20px var(--teal-glow);
-      flex-shrink: 0;
-    }
-    .brand-name  { font-size: 1rem; font-weight: 700; color: var(--text-1); letter-spacing: -0.01em; }
-    .brand-badge {
-      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.09em;
-      text-transform: uppercase; color: var(--teal-lt);
-      background: rgba(34,211,238,0.10);
-      border: 1px solid rgba(34,211,238,0.20);
-      padding: 0.18rem 0.55rem;
-      border-radius: 100px;
+    .ecg-path{
+      fill:none;
+      stroke:var(--cyan);
+      stroke-width:1.8;
+      stroke-linecap:round;
+      stroke-linejoin:round;
+      opacity:.35;
+      transition:stroke 1s ease, opacity .5s;
     }
 
-    .status-pill {
-      display: flex; align-items: center; gap: 0.45rem;
-      padding: 0.38rem 0.9rem;
-      background: var(--glass);
-      border: 1px solid var(--glass-border);
-      border-radius: 100px;
-      font-size: 0.75rem; font-weight: 500; color: var(--text-2);
+    .brand{position:relative;z-index:1;display:flex;align-items:center;gap:.85rem}
+    .brand-icon{
+      width:40px;height:40px;border-radius:11px;
+      background:linear-gradient(135deg,var(--cyan),var(--cyan-lt));
+      box-shadow:0 0 18px var(--cyan-glow);
+      display:flex;align-items:center;justify-content:center;
+      flex-shrink:0;
     }
-    .status-dot {
-      width: 6px; height: 6px; border-radius: 50%;
-      background: var(--low);
-      animation: blink 2.4s ease infinite;
+    .brand-name{font-size:1rem;font-weight:700;color:var(--t1);letter-spacing:-.015em;line-height:1.2}
+    .brand-tag{
+      font-size:.65rem;font-weight:700;letter-spacing:.1em;
+      text-transform:uppercase;color:var(--cyan-lt);
+      background:rgba(103,232,249,.1);border:1px solid rgba(103,232,249,.2);
+      padding:.16rem .55rem;border-radius:100px;
     }
-    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+    .hd-right{position:relative;z-index:1;display:flex;align-items:center;gap:.85rem}
+    .status-pill{
+      display:flex;align-items:center;gap:.45rem;
+      padding:.38rem .9rem;
+      background:var(--sur);border:1px solid var(--brd);border-radius:100px;
+      font-size:.74rem;font-weight:500;color:var(--t2);
+    }
+    .sdot{width:6px;height:6px;border-radius:50%;background:var(--lo);animation:blink 2.5s ease infinite}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
 
-    /* ── Layout ────────────────────────────────────────────────── */
-    .wrapper {
-      position: relative; z-index: 1;
-      max-width: 1280px;
-      margin: 0 auto;
-      padding: 2rem 1.5rem 3rem;
-      display: grid;
-      grid-template-columns: minmax(0,1fr) minmax(0,1fr);
-      gap: 1.5rem;
-      align-items: start;
+    /* ── Main grid ─────────────────────────────────────── */
+    .wrap{
+      position:relative;z-index:1;
+      max-width:1300px;margin:0 auto;
+      padding:2rem 1.5rem 3rem;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:1.5rem;
+      align-items:start;
     }
-    @media (max-width: 860px) {
-      .wrapper { grid-template-columns: 1fr; }
-    }
+    @media(max-width:880px){.wrap{grid-template-columns:1fr}}
 
-    /* ── Glass card ────────────────────────────────────────────── */
-    .card {
-      background: var(--glass);
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--r);
-      overflow: hidden;
+    /* ── Glass card ────────────────────────────────────── */
+    .card{
+      background:var(--sur);
+      backdrop-filter:blur(20px);-webkit-backdrop-filter:blur(20px);
+      border:1px solid var(--brd);
+      border-radius:var(--r);overflow:hidden;
     }
-    .card-head {
-      padding: 1.1rem 1.5rem;
-      border-bottom: 1px solid var(--glass-border);
-      display: flex; align-items: center; gap: 0.75rem;
+    .card-hd{
+      padding:1.1rem 1.5rem;border-bottom:1px solid var(--brd);
+      display:flex;align-items:center;gap:.7rem;
     }
-    .card-icon {
-      width: 30px; height: 30px; border-radius: 8px;
-      background: var(--teal-glow);
-      border: 1px solid rgba(8,145,178,0.25);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--teal-lt); flex-shrink: 0;
+    .card-ico{
+      width:30px;height:30px;border-radius:8px;
+      background:var(--cyan-glow);border:1px solid rgba(6,182,212,.25);
+      display:flex;align-items:center;justify-content:center;
+      color:var(--cyan-lt);flex-shrink:0;
     }
-    .card-title { font-size: 0.88rem; font-weight: 600; color: var(--text-1); }
-    .card-body  { padding: 1.5rem; }
+    .card-ttl{font-size:.88rem;font-weight:600;color:var(--t1)}
+    .card-bd{padding:1.5rem}
 
-    /* ── Presets ───────────────────────────────────────────────── */
-    .presets-label {
-      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--text-3);
-      margin-bottom: 0.5rem;
+    /* ── Presets ───────────────────────────────────────── */
+    .pre-lbl{font-size:.67rem;font-weight:700;letter-spacing:.09em;text-transform:uppercase;color:var(--t3);margin-bottom:.45rem}
+    .pre-row{display:flex;gap:.5rem;margin-bottom:1.4rem}
+    .pre-btn{
+      flex:1;padding:.42rem .4rem;
+      border-radius:var(--r-s);border:1px solid var(--brd);
+      background:rgba(255,255,255,.025);
+      font-family:'Figtree',sans-serif;font-size:.73rem;font-weight:600;
+      color:var(--t2);cursor:pointer;
+      transition:all .18s var(--ease);
     }
-    .presets-row {
-      display: flex; gap: 0.5rem; margin-bottom: 1.4rem;
-    }
-    .preset {
-      flex: 1; padding: 0.42rem 0.5rem;
-      border-radius: var(--r-sm);
-      border: 1px solid var(--glass-border);
-      background: rgba(255,255,255,0.03);
-      font-family: 'Figtree', sans-serif;
-      font-size: 0.73rem; font-weight: 600;
-      color: var(--text-2); cursor: pointer;
-      transition: all 0.18s var(--ease);
-    }
-    .preset:hover { background: rgba(255,255,255,0.07); }
-    .preset.pl:hover { border-color: var(--low);  color: #4ADE80; }
-    .preset.pm:hover { border-color: var(--mod);  color: #FB923C; }
-    .preset.ph:hover { border-color: var(--high); color: #F87171; }
-    .preset:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+    .pre-btn:hover{background:var(--sur2)}
+    .pre-btn.pl:hover{border-color:var(--lo); color:var(--lo)}
+    .pre-btn.pm:hover{border-color:var(--mo); color:var(--mo)}
+    .pre-btn.ph:hover{border-color:var(--hi); color:var(--hi)}
+    .pre-btn:focus-visible{outline:2px solid var(--cyan);outline-offset:2px}
 
-    /* ── Form grid ─────────────────────────────────────────────── */
-    .form-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 1rem 1.1rem;
-    }
-    .field { display: flex; flex-direction: column; gap: 0.28rem; }
-    .field.full { grid-column: 1 / -1; }
+    /* ── Field grid ────────────────────────────────────── */
+    .fgrid{display:grid;grid-template-columns:1fr 1fr;gap:1.1rem 1.2rem}
+    .field{display:flex;flex-direction:column;gap:.28rem}
+    .field.full{grid-column:1/-1}
 
-    .field label {
-      font-size: 0.72rem; font-weight: 700;
-      color: var(--text-2);
-      text-transform: uppercase; letter-spacing: 0.07em;
-      display: flex; align-items: baseline; gap: 0.35rem;
+    .flbl{
+      display:flex;justify-content:space-between;align-items:center;
     }
-    .field label span {
-      font-size: 0.68rem; font-weight: 400;
-      text-transform: none; letter-spacing: 0; color: var(--text-3);
+    .flbl-txt{
+      font-size:.7rem;font-weight:700;
+      text-transform:uppercase;letter-spacing:.07em;color:var(--t2);
+    }
+    .flbl-txt span{font-size:.66rem;font-weight:400;text-transform:none;letter-spacing:0;color:var(--t3)}
+    .status-tag{
+      font-size:.62rem;font-weight:700;letter-spacing:.06em;text-transform:uppercase;
+      padding:.1rem .48rem;border-radius:100px;
+      transition:all .3s var(--ease);
+      display:none;
     }
 
-    .field input[type="number"] {
-      -moz-appearance: textfield;
-      width: 100%;
-      padding: 0.62rem 0.85rem;
-      background: rgba(255,255,255,0.04);
-      border: 1.5px solid rgba(255,255,255,0.09);
-      border-radius: var(--r-sm);
-      color: var(--text-1);
-      font-family: 'Figtree', sans-serif;
-      font-size: 0.92rem; font-weight: 500;
-      transition: border-color 0.18s var(--ease), background 0.18s var(--ease), box-shadow 0.18s var(--ease);
-      outline: none;
+    /* dual control: slider + number */
+    .dual{display:flex;align-items:center;gap:.6rem}
+
+    /* range slider */
+    input[type="range"]{
+      -webkit-appearance:none;appearance:none;
+      flex:1;height:5px;border-radius:100px;cursor:pointer;outline:none;
+      background:linear-gradient(to right,var(--track-fill,var(--cyan)) 0%,var(--track-fill,var(--cyan)) var(--pct,50%),rgba(255,255,255,.1) var(--pct,50%),rgba(255,255,255,.1) 100%);
+      transition:background .1s;
     }
-    .field input[type="number"]::-webkit-inner-spin-button,
-    .field input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
-    .field input[type="number"]:hover:not(:focus) {
-      border-color: rgba(255,255,255,0.17);
-      background: rgba(255,255,255,0.05);
+    input[type="range"]::-webkit-slider-thumb{
+      -webkit-appearance:none;appearance:none;
+      width:14px;height:14px;border-radius:50%;
+      background:var(--thumb-color,var(--cyan));
+      border:2px solid rgba(255,255,255,.25);
+      box-shadow:0 0 8px var(--thumb-glow,var(--cyan-glow));
+      transition:transform .15s, box-shadow .15s;
     }
-    .field input[type="number"]:focus {
-      border-color: var(--teal);
-      background: rgba(8,145,178,0.07);
-      box-shadow: 0 0 0 3px rgba(8,145,178,0.18);
+    input[type="range"]::-webkit-slider-thumb:hover{transform:scale(1.25)}
+    input[type="range"]::-moz-range-thumb{
+      width:14px;height:14px;border-radius:50%;border:none;
+      background:var(--thumb-color,var(--cyan));
     }
-    .field input[type="number"]:focus-visible {
-      outline: none;
-    }
-    .field-hint {
-      font-size: 0.67rem; color: var(--text-3); line-height: 1.3;
+    input[type="range"]:focus-visible::-webkit-slider-thumb{
+      box-shadow:0 0 0 3px var(--cyan-glow), 0 0 8px var(--cyan-glow);
     }
 
-    /* ── Button ────────────────────────────────────────────────── */
-    .btn-run {
-      margin-top: 1.35rem; width: 100%;
-      padding: 0.82rem 1rem;
-      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-lt) 100%);
-      color: #fff;
-      font-family: 'Figtree', sans-serif;
-      font-size: 0.92rem; font-weight: 700; letter-spacing: 0.01em;
-      border: none; border-radius: var(--r-sm);
-      cursor: pointer; display: flex; align-items: center;
-      justify-content: center; gap: 0.55rem;
-      transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease), opacity 0.15s;
-      position: relative; overflow: hidden;
+    /* number input */
+    input[type="number"]{
+      -moz-appearance:textfield;
+      width:62px;padding:.42rem .5rem;
+      background:rgba(255,255,255,.05);
+      border:1.5px solid var(--brd);border-radius:var(--r-s);
+      color:var(--t1);font-family:'Figtree',sans-serif;
+      font-size:.85rem;font-weight:600;text-align:center;
+      outline:none;transition:border-color .18s,box-shadow .18s;
     }
-    .btn-run:hover:not(:disabled) {
-      transform: translateY(-1px);
-      box-shadow: 0 10px 28px rgba(8,145,178,0.38);
+    input[type="number"]::-webkit-inner-spin-button,
+    input[type="number"]::-webkit-outer-spin-button{-webkit-appearance:none}
+    input[type="number"]:focus{
+      border-color:var(--cyan);
+      box-shadow:0 0 0 3px var(--cyan-glow);
     }
-    .btn-run:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
-    .btn-run:disabled { cursor: not-allowed; opacity: 0.65; }
-    .btn-run:focus-visible { outline: 2px solid var(--teal-lt); outline-offset: 3px; }
+    .field-hint{font-size:.64rem;color:var(--t3)}
 
-    /* shimmer on loading */
-    .btn-run.loading::after {
-      content: '';
-      position: absolute; inset: 0;
-      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
-      animation: shimmer 1.4s linear infinite;
+    /* ── Run button ────────────────────────────────────── */
+    .btn-run{
+      margin-top:1.35rem;width:100%;
+      padding:.85rem 1rem;
+      background:linear-gradient(135deg,var(--cyan),var(--cyan-lt));
+      color:#fff;font-family:'Figtree',sans-serif;
+      font-size:.93rem;font-weight:700;letter-spacing:.01em;
+      border:none;border-radius:var(--r-s);cursor:pointer;
+      display:flex;align-items:center;justify-content:center;gap:.55rem;
+      position:relative;overflow:hidden;
+      transition:transform .15s var(--ease),box-shadow .15s;
     }
-    @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+    .btn-run:hover:not(:disabled){
+      transform:translateY(-1px);
+      box-shadow:0 10px 30px rgba(6,182,212,.40);
+    }
+    .btn-run:active:not(:disabled){transform:translateY(0)}
+    .btn-run:disabled{cursor:not-allowed;opacity:.6}
+    .btn-run:focus-visible{outline:2px solid var(--cyan-lt);outline-offset:3px}
+    .btn-run.loading::after{
+      content:'';position:absolute;inset:0;
+      background:linear-gradient(90deg,transparent,rgba(255,255,255,.18),transparent);
+      animation:shim 1.3s linear infinite;
+    }
+    @keyframes shim{from{transform:translateX(-100%)}to{transform:translateX(100%)}}
+    .spin{
+      display:none;width:15px;height:15px;
+      border:2.5px solid rgba(255,255,255,.3);
+      border-top-color:#fff;border-radius:50%;
+      animation:rot .65s linear infinite;
+    }
+    .btn-run.loading .spin{display:block}
+    .btn-run.loading .btn-ic{display:none}
+    @keyframes rot{to{transform:rotate(360deg)}}
 
-    /* spinner in button */
-    .spinner {
-      display: none;
-      width: 14px; height: 14px;
-      border: 2px solid rgba(255,255,255,0.35);
-      border-top-color: #fff;
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
+    /* ── Error ─────────────────────────────────────────── */
+    .err-box{
+      margin-top:.85rem;display:none;
+      padding:.7rem .9rem;
+      background:var(--hi-s);border:1px solid var(--hi-b);
+      border-radius:var(--r-s);color:#FDA4AF;
+      font-size:.8rem;align-items:flex-start;gap:.45rem;
     }
-    .btn-run.loading .spinner { display: block; }
-    .btn-run.loading .btn-icon { display: none; }
-    @keyframes spin { to{transform:rotate(360deg)} }
+    .err-box.show{display:flex}
 
-    /* ── Error box ─────────────────────────────────────────────── */
-    .error-box {
-      margin-top: 0.85rem; display: none;
-      padding: 0.7rem 0.9rem;
-      background: var(--high-soft);
-      border: 1px solid var(--high-border);
-      border-radius: var(--r-sm);
-      color: #FCA5A5; font-size: 0.8rem;
-      align-items: flex-start; gap: 0.5rem;
-      animation: fadeIn 0.2s ease;
+    /* ── Results: empty ────────────────────────────────── */
+    .empty-s{
+      padding:3.8rem 2rem;
+      display:flex;flex-direction:column;align-items:center;gap:.9rem;text-align:center;
     }
-    .error-box.show { display: flex; }
+    .empty-ring{
+      width:64px;height:64px;border-radius:50%;
+      border:1.5px dashed rgba(255,255,255,.13);
+      display:flex;align-items:center;justify-content:center;
+      color:var(--t3);
+      animation:pulse-ring 3s ease infinite;
+    }
+    @keyframes pulse-ring{
+      0%,100%{box-shadow:0 0 0 0 rgba(6,182,212,0)}
+      50%{box-shadow:0 0 0 8px rgba(6,182,212,.07)}
+    }
+    .empty-h{font-size:.9rem;font-weight:600;color:var(--t2)}
+    .empty-p{font-size:.77rem;color:var(--t3);max-width:195px;line-height:1.6}
 
-    /* ── Empty state ───────────────────────────────────────────── */
-    .empty-state {
-      padding: 3.5rem 2rem;
-      display: flex; flex-direction: column;
-      align-items: center; gap: 0.85rem; text-align: center;
-    }
-    .empty-ring {
-      width: 60px; height: 60px; border-radius: 50%;
-      border: 1.5px dashed rgba(255,255,255,0.12);
-      display: flex; align-items: center; justify-content: center;
-      color: var(--text-3);
-    }
-    .empty-h  { font-size: 0.9rem; font-weight: 600; color: var(--text-2); }
-    .empty-p  { font-size: 0.78rem; color: var(--text-3); max-width: 200px; line-height: 1.55; }
+    /* ── Results: output ───────────────────────────────── */
+    .res-out{display:none}
+    .res-out.show{display:block;animation:fadeUp .4s var(--ease)}
+    @keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 
-    /* ── Result output ─────────────────────────────────────────── */
-    #resultOut {
-      display: none;
-      animation: fadeIn 0.35s var(--ease);
+    /* scanning overlay */
+    .scan-overlay{
+      position:absolute;inset:0;pointer-events:none;z-index:20;
+      background:linear-gradient(to bottom,transparent 44%,rgba(6,182,212,.07) 48%,rgba(6,182,212,.16) 50%,rgba(6,182,212,.07) 52%,transparent 56%);
+      display:none;
     }
-    #resultOut.show { display: block; }
-    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+    .card.scanning .scan-overlay{display:block;animation:scanDown 1s ease infinite}
+    @keyframes scanDown{from{transform:translateY(-110%)}to{transform:translateY(110%)}}
 
-    /* Risk badge */
-    .risk-badge {
-      display: inline-flex; align-items: center; gap: 0.38rem;
-      padding: 0.3rem 0.75rem; border-radius: 100px;
-      font-size: 0.72rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.08em;
-      margin-bottom: 1.35rem;
+    /* risk badge */
+    .r-badge{
+      display:inline-flex;align-items:center;gap:.4rem;
+      padding:.3rem .8rem;border-radius:100px;
+      font-size:.7rem;font-weight:800;text-transform:uppercase;letter-spacing:.09em;
+      margin-bottom:1.3rem;
     }
-    .risk-badge.high     { background: var(--high-soft); color: #F87171; border: 1px solid var(--high-border); }
-    .risk-badge.moderate { background: var(--mod-soft);  color: #FB923C; border: 1px solid var(--mod-border);  }
-    .risk-badge.low      { background: var(--low-soft);  color: #4ADE80; border: 1px solid var(--low-border);  }
+    .r-badge.high    {background:var(--hi-s);color:#FB7185;border:1px solid var(--hi-b)}
+    .r-badge.moderate{background:var(--mo-s);color:#FB923C;border:1px solid var(--mo-b)}
+    .r-badge.low     {background:var(--lo-s);color:#34D399;border:1px solid var(--lo-b)}
 
-    /* ── Gauge ─────────────────────────────────────────────────── */
-    .gauge-wrap {
-      display: flex; justify-content: center; margin-bottom: 1.5rem;
+    /* gauge */
+    .gauge-wrap{display:flex;justify-content:center;margin-bottom:1.4rem}
+    .gauge-container{position:relative;width:170px;height:170px;display:flex;align-items:center;justify-content:center}
+    .gauge-svg{position:absolute;inset:0;transform:rotate(-90deg)}
+    .g-track{fill:none;stroke:rgba(255,255,255,.06);stroke-width:12}
+    .g-fill{
+      fill:none;stroke-width:12;stroke-linecap:round;
+      stroke-dasharray:408.41; /* 2π×65 */
+      stroke-dashoffset:408.41;
+      transition:stroke-dashoffset 1s var(--ease),stroke .5s ease;
     }
-    .gauge-container {
-      position: relative; width: 160px; height: 160px;
-      display: flex; align-items: center; justify-content: center;
+    /* outer glow ring */
+    .g-outer{fill:none;stroke-width:1.5;stroke-dasharray:408.41;stroke-dashoffset:408.41;opacity:.35;transition:stroke-dashoffset 1s var(--ease),stroke .5s ease}
+    .gauge-info{
+      position:relative;z-index:1;
+      display:flex;flex-direction:column;align-items:center;gap:0;
     }
-    .gauge-svg {
-      position: absolute; inset: 0;
-      transform: rotate(-90deg);
-    }
-    .g-track {
-      fill: none;
-      stroke: rgba(255,255,255,0.06);
-      stroke-width: 11;
-    }
-    .g-fill {
-      fill: none;
-      stroke-width: 11;
-      stroke-linecap: round;
-      stroke-dasharray: 439.82; /* 2π × 70 */
-      stroke-dashoffset: 439.82;
-      transition: stroke-dashoffset 0.9s var(--ease), stroke 0.4s ease;
-      filter: drop-shadow(0 0 6px currentColor);
-    }
-    .gauge-info {
-      position: relative; z-index: 1;
-      display: flex; flex-direction: column;
-      align-items: center; justify-content: center;
-      text-align: center; gap: 0;
-    }
-    .gauge-pct {
-      font-size: 2.2rem; font-weight: 800;
-      letter-spacing: -0.05em; line-height: 1;
-    }
-    .gauge-sub {
-      font-size: 0.67rem; font-weight: 600; letter-spacing: 0.08em;
-      text-transform: uppercase; color: var(--text-3);
-      margin-top: 0.2rem;
-    }
+    .g-pct{font-size:2.4rem;font-weight:800;letter-spacing:-.05em;line-height:1}
+    .g-lbl{font-size:.64rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--t3);margin-top:.18rem}
 
-    /* ── Stats row ─────────────────────────────────────────────── */
-    .stats-row {
-      display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr;
-      background: rgba(255,255,255,0.03);
-      border: 1px solid var(--glass-border);
-      border-radius: var(--r-sm);
-      margin-bottom: 1.35rem; overflow: hidden;
+    /* stats row */
+    .stats{
+      display:grid;grid-template-columns:1fr 1px 1fr 1px 1fr;
+      background:rgba(255,255,255,.025);border:1px solid var(--brd);
+      border-radius:var(--r-s);margin-bottom:1.35rem;overflow:hidden;
     }
-    .stat {
-      padding: 0.7rem 0.6rem; text-align: center;
-    }
-    .stat-val {
-      font-size: 0.92rem; font-weight: 700; color: var(--text-1);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .stat-key {
-      font-size: 0.65rem; font-weight: 600;
-      text-transform: uppercase; letter-spacing: 0.07em;
-      color: var(--text-3); margin-top: 0.1rem;
-    }
-    .stat-div {
-      background: var(--glass-border);
-      align-self: stretch;
-    }
+    .stat{padding:.72rem .5rem;text-align:center}
+    .stat-v{font-size:.92rem;font-weight:700;color:var(--t1);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .stat-k{font-size:.62rem;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--t3);margin-top:.1rem}
+    .st-div{background:var(--brd);align-self:stretch}
 
-    /* ── SHAP section ──────────────────────────────────────────── */
-    .shap-head {
-      display: flex; align-items: center; gap: 0.45rem;
-      font-size: 0.72rem; font-weight: 700;
-      text-transform: uppercase; letter-spacing: 0.08em;
-      color: var(--text-2); margin-bottom: 0.9rem;
+    /* shap */
+    .shap-hd{
+      display:flex;align-items:center;gap:.45rem;
+      font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;
+      color:var(--t2);margin-bottom:.85rem;
     }
-    .shap-head-icon {
-      width: 20px; height: 20px; border-radius: 5px;
-      background: rgba(249,115,22,0.12);
-      border: 1px solid rgba(249,115,22,0.20);
-      display: flex; align-items: center; justify-content: center;
-      color: #FB923C; flex-shrink: 0;
+    .shap-ico{
+      width:20px;height:20px;border-radius:5px;
+      background:rgba(249,115,22,.12);border:1px solid rgba(249,115,22,.22);
+      display:flex;align-items:center;justify-content:center;color:#FB923C;flex-shrink:0;
     }
+    .sh-row{
+      display:grid;grid-template-columns:9rem 1fr 3.6rem;
+      align-items:center;gap:.5rem;margin-bottom:.55rem;
+      opacity:0;animation:shIn .3s var(--ease) forwards;
+      cursor:default;
+    }
+    .sh-row:hover .sh-track{background:rgba(255,255,255,.1)}
+    @keyframes shIn{from{opacity:0;transform:translateX(-6px)}to{opacity:1;transform:translateX(0)}}
+    .sh-nm{font-size:.75rem;color:var(--t2);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .sh-track{height:5px;background:rgba(255,255,255,.06);border-radius:100px;overflow:hidden;transition:background .2s}
+    .sh-bar{height:100%;border-radius:100px;transition:width .6s var(--ease)}
+    .sh-bar.p{background:linear-gradient(90deg,#BE123C,#F87171)}
+    .sh-bar.n{background:linear-gradient(90deg,#065F46,#34D399)}
+    .sh-val{font-size:.7rem;font-weight:700;text-align:right;font-variant-numeric:tabular-nums}
+    .sh-val.p{color:#F87171}.sh-val.n{color:#34D399}
 
-    .shap-row {
-      display: grid;
-      grid-template-columns: 9.5rem 1fr 3.8rem;
-      align-items: center; gap: 0.55rem;
-      margin-bottom: 0.6rem;
-      opacity: 0;
-      animation: slideUp 0.28s var(--ease) forwards;
-    }
-    @keyframes slideUp { from{opacity:0;transform:translateX(-5px)} to{opacity:1;transform:translateX(0)} }
-
-    .shap-name {
-      font-size: 0.76rem; color: var(--text-2);
-      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-    }
-    .shap-track {
-      height: 5px; background: rgba(255,255,255,0.05);
-      border-radius: 100px; overflow: hidden;
-    }
-    .shap-fill {
-      height: 100%; border-radius: 100px;
-      transition: width 0.55s var(--ease);
-    }
-    .shap-fill.pos { background: linear-gradient(90deg, #DC2626, #F87171); }
-    .shap-fill.neg { background: linear-gradient(90deg, #15803D, #4ADE80); }
-
-    .shap-val {
-      font-size: 0.71rem; font-weight: 700;
-      text-align: right; font-variant-numeric: tabular-nums;
-    }
-    .shap-val.pos { color: #F87171; }
-    .shap-val.neg { color: #4ADE80; }
-
-    /* ── Footer ────────────────────────────────────────────────── */
-    footer {
-      position: relative; z-index: 1;
-      text-align: center;
-      padding: 1.25rem 2rem 2rem;
-      color: var(--text-3);
-      font-size: 0.72rem; line-height: 1.65;
-      border-top: 1px solid var(--glass-border);
+    /* ── Footer ────────────────────────────────────────── */
+    footer{
+      position:relative;z-index:1;
+      text-align:center;padding:1.25rem 2rem 2.5rem;
+      color:var(--t3);font-size:.71rem;line-height:1.7;
+      border-top:1px solid var(--brd);
     }
 
-    /* ── Reduced motion ────────────────────────────────────────── */
-    @media (prefers-reduced-motion: reduce) {
-      *, *::before, *::after {
-        animation-duration: 0.01ms !important;
-        transition-duration: 0.01ms !important;
-      }
+    @media(prefers-reduced-motion:reduce){
+      *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
     }
   </style>
 </head>
 <body>
 
-<!-- ════════════════ HEADER ════════════════ -->
+<!-- floating blood-cell particles -->
+<canvas id="bgCanvas"></canvas>
+
+<!-- ══ HEADER ══════════════════════════════════════════════════ -->
 <header>
+
+  <!-- ECG animated background -->
+  <div class="ecg-track" aria-hidden="true">
+    <svg class="ecg-svg" id="ecgSvg" height="60" viewBox="0 0 1000 60">
+      <path class="ecg-path" id="ecgPath"/>
+    </svg>
+  </div>
+
   <div class="brand">
     <div class="brand-icon" aria-hidden="true">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
         <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
       </svg>
     </div>
     <div>
       <div class="brand-name">Diabetes Risk Predictor</div>
+      <div class="brand-tag">XGBoost · SHAP Explainability</div>
     </div>
-    <div class="brand-badge">XGBoost · SHAP</div>
   </div>
 
-  <div class="status-pill" role="status" aria-label="API connection status">
-    <div class="status-dot" aria-hidden="true"></div>
-    <span>API Live</span>
+  <div class="hd-right">
+    <div class="status-pill" role="status" aria-label="API status">
+      <div class="sdot" aria-hidden="true"></div>
+      <span>API Live</span>
+    </div>
   </div>
+
 </header>
 
-<!-- ════════════════ MAIN ════════════════ -->
-<div class="wrapper">
+<!-- ══ MAIN ════════════════════════════════════════════════════ -->
+<div class="wrap">
 
-  <!-- ── LEFT: Input ─────────────────────────────────── -->
+  <!-- ── LEFT: Patient Input ─────────────────────────── -->
   <section class="card" aria-label="Patient parameter input">
-    <div class="card-head">
-      <div class="card-icon" aria-hidden="true">
+    <div class="card-hd">
+      <div class="card-ico" aria-hidden="true">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-          <circle cx="12" cy="7" r="4"/>
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
         </svg>
       </div>
-      <span class="card-title">Patient Parameters</span>
+      <span class="card-ttl">Patient Parameters</span>
     </div>
+    <div class="card-bd">
 
-    <div class="card-body">
-
-      <!-- Quick presets -->
-      <div class="presets-label">Quick Presets</div>
-      <div class="presets-row">
-        <button class="preset pl" type="button" onclick="loadPreset('low')"      aria-label="Load low-risk preset values">Low Risk</button>
-        <button class="preset pm" type="button" onclick="loadPreset('moderate')" aria-label="Load moderate-risk preset values">Moderate</button>
-        <button class="preset ph" type="button" onclick="loadPreset('high')"     aria-label="Load high-risk preset values">High Risk</button>
+      <div class="pre-lbl">Quick Presets</div>
+      <div class="pre-row">
+        <button class="pre-btn pl" type="button" onclick="loadPreset('low')"      aria-label="Load low-risk preset">Low Risk</button>
+        <button class="pre-btn pm" type="button" onclick="loadPreset('moderate')" aria-label="Load moderate-risk preset">Moderate</button>
+        <button class="pre-btn ph" type="button" onclick="loadPreset('high')"     aria-label="Load high-risk preset">High Risk</button>
       </div>
 
-      <!-- Input form -->
-      <form id="form" onsubmit="return false;" novalidate>
-        <div class="form-grid">
+      <form id="pForm" onsubmit="return false;" novalidate>
+        <div class="fgrid">
 
-          <div class="field">
-            <label for="pregnancies">Pregnancies</label>
-            <input type="number" id="pregnancies" min="0" max="17" step="1" value="2" aria-describedby="h-preg" />
-            <span class="field-hint" id="h-preg">0 – 17</span>
+          <!-- pregnancies -->
+          <div class="field" id="f-pregnancies">
+            <div class="flbl">
+              <span class="flbl-txt">Pregnancies</span>
+              <span class="status-tag" id="st-pregnancies"></span>
+            </div>
+            <div class="dual">
+              <input type="range"  id="r-pregnancies" min="0"  max="17"  step="1"   value="2"   oninput="sync('pregnancies',this.value)" aria-label="Pregnancies slider"/>
+              <input type="number" id="pregnancies"   min="0"  max="17"  step="1"   value="2"   oninput="sync('pregnancies',this.value,true)" aria-label="Pregnancies value"/>
+            </div>
+            <span class="field-hint">0 – 17</span>
           </div>
 
-          <div class="field">
-            <label for="glucose">Glucose <span>mg/dL</span></label>
-            <input type="number" id="glucose" min="50" max="250" step="1" value="120" aria-describedby="h-glu" />
-            <span class="field-hint" id="h-glu">50 – 250</span>
+          <!-- glucose -->
+          <div class="field" id="f-glucose">
+            <div class="flbl">
+              <span class="flbl-txt">Glucose <span>mg/dL</span></span>
+              <span class="status-tag" id="st-glucose"></span>
+            </div>
+            <div class="dual">
+              <input type="range"  id="r-glucose" min="50"  max="250" step="1"   value="120" oninput="sync('glucose',this.value)" aria-label="Glucose slider"/>
+              <input type="number" id="glucose"   min="50"  max="250" step="1"   value="120" oninput="sync('glucose',this.value,true)" aria-label="Glucose value"/>
+            </div>
+            <span class="field-hint">50 – 250</span>
           </div>
 
-          <div class="field">
-            <label for="blood_pressure">Blood Pressure <span>mm Hg</span></label>
-            <input type="number" id="blood_pressure" min="40" max="130" step="1" value="72" aria-describedby="h-bp" />
-            <span class="field-hint" id="h-bp">40 – 130</span>
+          <!-- blood_pressure -->
+          <div class="field" id="f-blood_pressure">
+            <div class="flbl">
+              <span class="flbl-txt">Blood Pressure <span>mm Hg</span></span>
+              <span class="status-tag" id="st-blood_pressure"></span>
+            </div>
+            <div class="dual">
+              <input type="range"  id="r-blood_pressure" min="40"  max="130" step="1"   value="72" oninput="sync('blood_pressure',this.value)" aria-label="Blood pressure slider"/>
+              <input type="number" id="blood_pressure"   min="40"  max="130" step="1"   value="72" oninput="sync('blood_pressure',this.value,true)" aria-label="Blood pressure value"/>
+            </div>
+            <span class="field-hint">40 – 130</span>
           </div>
 
-          <div class="field">
-            <label for="skin_thickness">Skin Thickness <span>mm</span></label>
-            <input type="number" id="skin_thickness" min="0" max="100" step="1" value="20" aria-describedby="h-sk" />
-            <span class="field-hint" id="h-sk">0 – 100</span>
+          <!-- skin_thickness -->
+          <div class="field" id="f-skin_thickness">
+            <div class="flbl">
+              <span class="flbl-txt">Skin Thickness <span>mm</span></span>
+              <span class="status-tag" id="st-skin_thickness"></span>
+            </div>
+            <div class="dual">
+              <input type="range"  id="r-skin_thickness" min="0" max="100" step="1" value="20" oninput="sync('skin_thickness',this.value)" aria-label="Skin thickness slider"/>
+              <input type="number" id="skin_thickness"   min="0" max="100" step="1" value="20" oninput="sync('skin_thickness',this.value,true)" aria-label="Skin thickness value"/>
+            </div>
+            <span class="field-hint">0 – 100</span>
           </div>
 
-          <div class="field">
-            <label for="insulin">Insulin <span>mu U/ml</span></label>
-            <input type="number" id="insulin" min="0" max="900" step="1" value="80" aria-describedby="h-ins" />
-            <span class="field-hint" id="h-ins">0 – 900</span>
+          <!-- insulin -->
+          <div class="field" id="f-insulin">
+            <div class="flbl">
+              <span class="flbl-txt">Insulin <span>mu U/ml</span></span>
+              <span class="status-tag" id="st-insulin"></span>
+            </div>
+            <div class="dual">
+              <input type="range"  id="r-insulin" min="0" max="900" step="1" value="80" oninput="sync('insulin',this.value)" aria-label="Insulin slider"/>
+              <input type="number" id="insulin"   min="0" max="900" step="1" value="80" oninput="sync('insulin',this.value,true)" aria-label="Insulin value"/>
+            </div>
+            <span class="field-hint">0 – 900</span>
           </div>
 
-          <div class="field">
-            <label for="bmi">BMI</label>
-            <input type="number" id="bmi" min="10" max="70" step="0.1" value="25.0" aria-describedby="h-bmi" />
-            <span class="field-hint" id="h-bmi">10.0 – 70.0</span>
+          <!-- bmi -->
+          <div class="field" id="f-bmi">
+            <div class="flbl">
+              <span class="flbl-txt">BMI</span>
+              <span class="status-tag" id="st-bmi"></span>
+            </div>
+            <div class="dual">
+              <input type="range"  id="r-bmi" min="10" max="70" step="0.1" value="25" oninput="sync('bmi',this.value)" aria-label="BMI slider"/>
+              <input type="number" id="bmi"   min="10" max="70" step="0.1" value="25" oninput="sync('bmi',this.value,true)" aria-label="BMI value"/>
+            </div>
+            <span class="field-hint">10.0 – 70.0</span>
           </div>
 
-          <div class="field full">
-            <label for="dpf">Diabetes Pedigree Function</label>
-            <input type="number" id="dpf" min="0" max="2.5" step="0.01" value="0.35" aria-describedby="h-dpf" />
-            <span class="field-hint" id="h-dpf">0.0 – 2.5 &nbsp;·&nbsp; Hereditary risk score</span>
+          <!-- dpf -->
+          <div class="field full" id="f-dpf">
+            <div class="flbl">
+              <span class="flbl-txt">Diabetes Pedigree Function</span>
+              <span class="status-tag" id="st-dpf"></span>
+            </div>
+            <div class="dual">
+              <input type="range"  id="r-dpf" min="0" max="2.5" step="0.01" value="0.35" oninput="sync('dpf',this.value)" aria-label="Diabetes pedigree slider"/>
+              <input type="number" id="dpf"   min="0" max="2.5" step="0.01" value="0.35" oninput="sync('dpf',this.value,true)" aria-label="Diabetes pedigree value"/>
+            </div>
+            <span class="field-hint">0.0 – 2.5 &nbsp;·&nbsp; Hereditary risk score</span>
           </div>
 
-          <div class="field">
-            <label for="age">Age</label>
-            <input type="number" id="age" min="18" max="90" step="1" value="30" aria-describedby="h-age" />
-            <span class="field-hint" id="h-age">18 – 90</span>
+          <!-- age -->
+          <div class="field" id="f-age">
+            <div class="flbl">
+              <span class="flbl-txt">Age</span>
+              <span class="status-tag" id="st-age"></span>
+            </div>
+            <div class="dual">
+              <input type="range"  id="r-age" min="18" max="90" step="1" value="30" oninput="sync('age',this.value)" aria-label="Age slider"/>
+              <input type="number" id="age"   min="18" max="90" step="1" value="30" oninput="sync('age',this.value,true)" aria-label="Age value"/>
+            </div>
+            <span class="field-hint">18 – 90</span>
           </div>
 
         </div>
 
         <button class="btn-run" id="runBtn" type="submit" onclick="runAnalysis()" aria-label="Run diabetes risk analysis">
-          <div class="spinner" aria-hidden="true"></div>
-          <svg class="btn-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+          <div class="spin" aria-hidden="true"></div>
+          <svg class="btn-ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
             <polygon points="5 3 19 12 5 21 5 3"/>
           </svg>
           <span id="btnTxt">Run Analysis</span>
         </button>
 
-        <div class="error-box" id="errBox" role="alert" aria-live="assertive">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;margin-top:1px">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
+        <div class="err-box" id="errBox" role="alert" aria-live="assertive">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;margin-top:1px">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
           <span id="errTxt"></span>
         </div>
@@ -577,82 +564,82 @@
     </div>
   </section>
 
-  <!-- ── RIGHT: Results ───────────────────────────────── -->
-  <section class="card" aria-label="Prediction results" aria-live="polite" aria-atomic="false">
-    <div class="card-head">
-      <div class="card-icon" aria-hidden="true">
+  <!-- ── RIGHT: Risk Assessment ──────────────────────── -->
+  <section class="card" id="resultCard" aria-label="Prediction results" style="position:relative" aria-live="polite">
+    <div class="scan-overlay" id="scanOverlay" aria-hidden="true"></div>
+    <div class="card-hd">
+      <div class="card-ico" aria-hidden="true">
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
           <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
         </svg>
       </div>
-      <span class="card-title">Risk Assessment</span>
+      <span class="card-ttl">Risk Assessment</span>
     </div>
-
-    <div class="card-body">
+    <div class="card-bd">
 
       <!-- Empty state -->
-      <div class="empty-state" id="emptyState">
+      <div class="empty-s" id="emptyS">
         <div class="empty-ring" aria-hidden="true">
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"/>
-            <line x1="12" y1="8" x2="12" y2="12"/>
-            <line x1="12" y1="16" x2="12.01" y2="16"/>
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
           </svg>
         </div>
-        <div class="empty-h">Awaiting Input</div>
-        <p class="empty-p">Enter patient values and click Run Analysis to generate a clinical risk prediction.</p>
+        <div class="empty-h">Awaiting Analysis</div>
+        <p class="empty-p">Adjust the patient parameters on the left and click Run Analysis.</p>
       </div>
 
       <!-- Result output -->
-      <div id="resultOut">
+      <div class="res-out" id="resOut">
 
-        <!-- Risk badge -->
-        <div id="badge" class="risk-badge" role="status"></div>
+        <div class="r-badge" id="rBadge" role="status"></div>
 
-        <!-- Circular gauge -->
+        <!-- Gauge -->
         <div class="gauge-wrap">
-          <div class="gauge-container" role="img" aria-labelledby="gaugeAriaLabel">
-            <svg class="gauge-svg" width="160" height="160" viewBox="0 0 160 160" aria-hidden="true">
-              <circle class="g-track" cx="80" cy="80" r="70"/>
-              <circle class="g-fill"  cx="80" cy="80" r="70" id="gArc"/>
+          <div class="gauge-container">
+            <svg class="gauge-svg" width="170" height="170" viewBox="0 0 170 170" aria-hidden="true">
+              <!-- outer decoration ring -->
+              <circle class="g-outer" id="gOuter" cx="85" cy="85" r="78" stroke="var(--cyan)"/>
+              <!-- track -->
+              <circle class="g-track" cx="85" cy="85" r="65"/>
+              <!-- fill arc -->
+              <circle class="g-fill" id="gFill" cx="85" cy="85" r="65"/>
             </svg>
-            <div class="gauge-info">
-              <div class="gauge-pct" id="gPct" aria-hidden="true">—</div>
-              <div class="gauge-sub" aria-hidden="true">Risk Score</div>
+            <div class="gauge-info" aria-label="Risk probability gauge">
+              <div class="g-pct" id="gPct">—</div>
+              <div class="g-lbl">Risk Score</div>
             </div>
           </div>
-          <span id="gaugeAriaLabel" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;"></span>
         </div>
 
-        <!-- Stats row -->
-        <div class="stats-row" role="list">
+        <!-- Stats -->
+        <div class="stats" role="list">
           <div class="stat" role="listitem">
-            <div class="stat-val" id="sLabel">—</div>
-            <div class="stat-key">Diagnosis</div>
+            <div class="stat-v" id="sLabel">—</div>
+            <div class="stat-k">Diagnosis</div>
           </div>
-          <div class="stat-div" aria-hidden="true"></div>
+          <div class="st-div" aria-hidden="true"></div>
           <div class="stat" role="listitem">
-            <div class="stat-val" id="sProb">—</div>
-            <div class="stat-key">Probability</div>
+            <div class="stat-v" id="sProb">—</div>
+            <div class="stat-k">Probability</div>
           </div>
-          <div class="stat-div" aria-hidden="true"></div>
+          <div class="st-div" aria-hidden="true"></div>
           <div class="stat" role="listitem">
-            <div class="stat-val">40%</div>
-            <div class="stat-key">Threshold</div>
+            <div class="stat-v">40%</div>
+            <div class="stat-k">Threshold</div>
           </div>
         </div>
 
-        <!-- SHAP contributions -->
+        <!-- SHAP -->
         <div>
-          <div class="shap-head">
-            <div class="shap-head-icon" aria-hidden="true">
+          <div class="shap-hd">
+            <div class="shap-ico" aria-hidden="true">
               <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                 <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
               </svg>
             </div>
             Feature Contributions (SHAP)
           </div>
-          <div id="shapBars" role="list" aria-label="SHAP feature contribution bars"></div>
+          <div id="shapBars" role="list" aria-label="SHAP feature contributions"></div>
         </div>
 
       </div>
@@ -661,191 +648,350 @@
 
 </div>
 
-<!-- ════════════════ FOOTER ════════════════ -->
+<!-- ══ FOOTER ══════════════════════════════════════════════════ -->
 <footer>
-  <strong style="color:var(--text-2);font-weight:600;">Clinical Disclaimer</strong><br>
-  This interface is intended for research and educational purposes only. Predictions are produced by a
-  machine learning model and do not constitute medical advice, diagnosis, or treatment.
+  <strong style="color:var(--t2);font-weight:600">Clinical Disclaimer</strong><br>
+  This interface is for research and educational purposes only. Predictions are generated by a machine learning model
+  and do not constitute medical advice, diagnosis, or treatment.
   Always consult a qualified healthcare professional for clinical decisions.
 </footer>
 
 <script>
-  /* ── Config ──────────────────────────────────────────────────── */
-  const API_URL   = 'http://localhost:5000';
-  const CIRC      = 2 * Math.PI * 70;  // ≈ 439.82 (r = 70)
+/* ═══════════════════════════════════════════════════════════════
+   CONFIG
+═══════════════════════════════════════════════════════════════ */
+const API     = 'http://localhost:5000';
+const CIRC    = 2 * Math.PI * 65;   // ≈ 408.41
 
-  /* ── Risk palette ────────────────────────────────────────────── */
-  const RISK = {
-    high:     { color: '#EF4444', light: '#F87171', label: 'High Risk' },
-    moderate: { color: '#F97316', light: '#FB923C', label: 'Moderate Risk' },
-    low:      { color: '#22C55E', light: '#4ADE80', label: 'Low Risk' },
-  };
+const RISK = {
+  high:     { color:'#F43F5E', light:'#FB7185', glow:'rgba(244,63,94,.35)',  label:'High Risk',     ecg:'#F43F5E' },
+  moderate: { color:'#F97316', light:'#FB923C', glow:'rgba(249,115,22,.35)', label:'Moderate Risk', ecg:'#F97316' },
+  low:      { color:'#10B981', light:'#34D399', glow:'rgba(16,185,129,.35)', label:'Low Risk',      ecg:'#10B981' },
+};
 
-  /* ── Presets ─────────────────────────────────────────────────── */
-  const PRESETS = {
-    low:      { pregnancies:1,  glucose:88,  blood_pressure:66, skin_thickness:16, insulin:50,  bmi:21.8, dpf:0.17, age:24 },
-    moderate: { pregnancies:3,  glucose:128, blood_pressure:76, skin_thickness:28, insulin:135, bmi:30.1, dpf:0.41, age:37 },
-    high:     { pregnancies:7,  glucose:172, blood_pressure:90, skin_thickness:44, insulin:295, bmi:43.0, dpf:0.93, age:57 },
-  };
-
-  const FIELD_MAP = {
-    pregnancies:'pregnancies', glucose:'glucose', blood_pressure:'blood_pressure',
-    skin_thickness:'skin_thickness', insulin:'insulin', bmi:'bmi',
-    dpf:'diabetes_pedigree_function', age:'age',
-  };
-
-  function loadPreset(key) {
-    const p = PRESETS[key];
-    document.getElementById('pregnancies').value    = p.pregnancies;
-    document.getElementById('glucose').value        = p.glucose;
-    document.getElementById('blood_pressure').value = p.blood_pressure;
-    document.getElementById('skin_thickness').value = p.skin_thickness;
-    document.getElementById('insulin').value        = p.insulin;
-    document.getElementById('bmi').value            = p.bmi;
-    document.getElementById('dpf').value            = p.dpf;
-    document.getElementById('age').value            = p.age;
-  }
-
-  /* ── UI helpers ──────────────────────────────────────────────── */
-  function setError(msg) {
-    const box = document.getElementById('errBox');
-    document.getElementById('errTxt').textContent = msg;
-    box.classList.toggle('show', !!msg);
-  }
-
-  function setLoading(on) {
-    const btn = document.getElementById('runBtn');
-    btn.disabled = on;
-    btn.classList.toggle('loading', on);
-    document.getElementById('btnTxt').textContent = on ? 'Analyzing…' : 'Run Analysis';
-  }
-
-  /* ── Gauge ───────────────────────────────────────────────────── */
-  function animateGauge(prob, level) {
-    const arc   = document.getElementById('gArc');
-    const pctEl = document.getElementById('gPct');
-    const r     = RISK[level] || RISK.low;
-
-    arc.style.stroke          = r.color;
-    arc.style.strokeDashoffset = (CIRC * (1 - prob)).toFixed(3);
-    pctEl.textContent          = `${Math.round(prob * 100)}%`;
-    pctEl.style.color          = r.light;
-
-    document.getElementById('gaugeAriaLabel').textContent =
-      `Risk score: ${Math.round(prob * 100)}% — ${r.label}`;
-  }
-
-  /* ── SHAP bars ───────────────────────────────────────────────── */
-  function renderShap(contributions) {
-    const wrap  = document.getElementById('shapBars');
-    wrap.innerHTML = '';
-
-    const maxAbs = Math.max(...contributions.map(c => Math.abs(c.shap_value)), 0.0001);
-
-    contributions.forEach((c, i) => {
-      const pos  = c.direction === 'increases risk';
-      const pct  = ((Math.abs(c.shap_value) / maxAbs) * 100).toFixed(1);
-      const sign = pos ? '+' : '';
-
-      const row  = document.createElement('div');
-      row.className = 'shap-row';
-      row.style.animationDelay = `${i * 35}ms`;
-      row.setAttribute('role', 'listitem');
-      row.setAttribute('aria-label',
-        `${c.feature}: ${sign}${c.shap_value.toFixed(3)} — ${c.direction}`);
-
-      row.innerHTML = `
-        <span class="shap-name" title="${c.feature}">${c.feature}</span>
-        <div class="shap-track" aria-hidden="true">
-          <div class="shap-fill ${pos ? 'pos' : 'neg'}" style="width:${pct}%"></div>
-        </div>
-        <span class="shap-val ${pos ? 'pos' : 'neg'}" aria-hidden="true">
-          ${sign}${c.shap_value.toFixed(3)}
-        </span>`;
-
-      wrap.appendChild(row);
+/* ═══════════════════════════════════════════════════════════════
+   ECG WAVEFORM — built in JS, set on SVG path
+═══════════════════════════════════════════════════════════════ */
+(function buildECG() {
+  /* One ECG cycle: 200px wide, canvas height 60, baseline y=40 */
+  const cycle = [
+    [0,40],[28,40],
+    [32,36],[36,29],[40,36],[44,40],   // P wave
+    [50,40],[53,45],[57,3],[62,54],[66,40], // QRS
+    [71,38],[75,30],[81,24],[87,32],[93,40], // T wave
+    [200,40]                           // baseline
+  ];
+  const N = 5; /* repeat 5 times → 1000px, animate -200px */
+  let d = '';
+  for (let c = 0; c < N; c++) {
+    cycle.forEach(([x,y], i) => {
+      const cmd = (c===0 && i===0) ? 'M' : 'L';
+      d += `${cmd}${c*200+x},${y} `;
     });
   }
+  document.getElementById('ecgPath').setAttribute('d', d.trim());
+  document.getElementById('ecgSvg').setAttribute('width', N * 200);
+})();
 
-  /* ── Show result ─────────────────────────────────────────────── */
-  function showResult(data) {
-    const level = (data.risk_level || 'low').toLowerCase();
-    const r     = RISK[level] || RISK.low;
+function setECGColor(color) {
+  document.querySelector('.ecg-path').style.stroke = color;
+  document.querySelector('.ecg-path').style.opacity = color === 'var(--cyan)' ? '.35' : '.55';
+}
 
-    /* Badge */
-    const badge = document.getElementById('badge');
-    badge.className = `risk-badge ${level}`;
-    badge.innerHTML = `
-      <svg width="8" height="8" viewBox="0 0 10 10" aria-hidden="true">
-        <circle cx="5" cy="5" r="5" fill="${r.color}"/>
-      </svg>
-      ${r.label}`;
+/* ═══════════════════════════════════════════════════════════════
+   BLOOD-CELL CANVAS PARTICLES
+═══════════════════════════════════════════════════════════════ */
+(function initCanvas() {
+  const canvas = document.getElementById('bgCanvas');
+  const ctx    = canvas.getContext('2d');
 
-    /* Gauge */
-    animateGauge(data.probability, level);
-
-    /* Stats */
-    const labelEl = document.getElementById('sLabel');
-    labelEl.textContent = data.prediction;
-    labelEl.style.color = r.light;
-    document.getElementById('sProb').textContent = `${(data.probability * 100).toFixed(1)}%`;
-
-    /* SHAP */
-    if (Array.isArray(data.contributions)) renderShap(data.contributions);
-
-    /* Reveal */
-    document.getElementById('emptyState').style.display = 'none';
-    const out = document.getElementById('resultOut');
-    out.classList.remove('show');
-    void out.offsetWidth;           /* force reflow to re-trigger animation */
-    out.classList.add('show');
+  function resize() {
+    canvas.width  = window.innerWidth;
+    canvas.height = window.innerHeight;
   }
+  resize();
+  window.addEventListener('resize', resize);
 
-  /* ── Main prediction call ────────────────────────────────────── */
-  async function runAnalysis() {
-    setError('');
-    setLoading(true);
+  const CELLS = Array.from({length: 28}, () => ({
+    x:   Math.random() * window.innerWidth,
+    y:   Math.random() * window.innerHeight,
+    rx:  7 + Math.random() * 11,
+    vy:  -(0.18 + Math.random() * 0.35),
+    vx:  (Math.random() - .5) * 0.25,
+    ang: Math.random() * Math.PI,
+    va:  (Math.random() - .5) * 0.006,
+    op:  0.025 + Math.random() * 0.04,
+  }));
 
-    /* Collect & validate */
-    const IDS = ['pregnancies','glucose','blood_pressure','skin_thickness',
-                 'insulin','bmi','dpf','age'];
-    const API_KEYS = ['pregnancies','glucose','blood_pressure','skin_thickness',
-                      'insulin','bmi','diabetes_pedigree_function','age'];
-    const payload = {};
+  function drawFrame() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    CELLS.forEach(c => {
+      ctx.save();
+      ctx.translate(c.x, c.y);
+      ctx.rotate(c.ang);
+      /* outer cell body */
+      ctx.beginPath();
+      ctx.ellipse(0, 0, c.rx, c.rx * 0.58, 0, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(200,40,60,${c.op})`;
+      ctx.fill();
+      /* biconcave dimple */
+      ctx.beginPath();
+      ctx.ellipse(0, 0, c.rx * 0.52, c.rx * 0.22, 0, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(0,4,12,${c.op * 1.6})`;
+      ctx.fill();
+      ctx.restore();
 
-    for (let i = 0; i < IDS.length; i++) {
-      const val = parseFloat(document.getElementById(IDS[i]).value);
-      if (isNaN(val)) {
-        setError(`"${IDS[i].replace(/_/g,' ')}" is not a valid number.`);
-        setLoading(false);
-        return;
-      }
-      payload[API_KEYS[i]] = val;
-    }
+      c.x   += c.vx;
+      c.y   += c.vy;
+      c.ang += c.va;
+      if (c.y < -25)               { c.y = canvas.height + 25; c.x = Math.random() * canvas.width; }
+      if (c.x < -25)               c.x = canvas.width + 25;
+      if (c.x > canvas.width + 25) c.x = -25;
+    });
+    requestAnimationFrame(drawFrame);
+  }
+  drawFrame();
+})();
 
-    try {
-      const res  = await fetch(`${API_URL}/predict/explain`, {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify(payload),
-      });
+/* ═══════════════════════════════════════════════════════════════
+   CLINICAL STATUS TAGS — update as sliders move
+═══════════════════════════════════════════════════════════════ */
+const STATUS_MAP = {
+  glucose: [
+    { max:100, lbl:'Normal',      css:'var(--lo-s)', brd:'var(--lo-b)', col:'#34D399' },
+    { max:126, lbl:'Pre-Diabetic',css:'var(--mo-s)', brd:'var(--mo-b)', col:'#FB923C' },
+    { max:999, lbl:'Diabetic',    css:'var(--hi-s)', brd:'var(--hi-b)', col:'#FB7185' },
+  ],
+  bmi: [
+    { max:18.5, lbl:'Underweight',css:'var(--mo-s)',brd:'var(--mo-b)',col:'#FB923C' },
+    { max:25,   lbl:'Normal',     css:'var(--lo-s)',brd:'var(--lo-b)',col:'#34D399' },
+    { max:30,   lbl:'Overweight', css:'var(--mo-s)',brd:'var(--mo-b)',col:'#FB923C' },
+    { max:999,  lbl:'Obese',      css:'var(--hi-s)',brd:'var(--hi-b)',col:'#FB7185' },
+  ],
+  blood_pressure: [
+    { max:80,  lbl:'Normal',   css:'var(--lo-s)',brd:'var(--lo-b)',col:'#34D399' },
+    { max:90,  lbl:'Elevated', css:'var(--mo-s)',brd:'var(--mo-b)',col:'#FB923C' },
+    { max:999, lbl:'High',     css:'var(--hi-s)',brd:'var(--hi-b)',col:'#FB7185' },
+  ],
+  insulin: [
+    { max:100, lbl:'Normal',  css:'var(--lo-s)',brd:'var(--lo-b)',col:'#34D399' },
+    { max:166, lbl:'Elevated',css:'var(--mo-s)',brd:'var(--mo-b)',col:'#FB923C' },
+    { max:999, lbl:'High',    css:'var(--hi-s)',brd:'var(--hi-b)',col:'#FB7185' },
+  ],
+};
 
-      const data = await res.json();
+function updateStatus(id, val) {
+  const tag = document.getElementById(`st-${id}`);
+  if (!tag) return;
+  const rules = STATUS_MAP[id];
+  if (!rules) { tag.style.display = 'none'; return; }
 
-      if (!res.ok) {
-        setError(data.error || `Server error (${res.status}). Check the API.`);
-        setLoading(false);
-        return;
-      }
+  const r   = rules.find(r => +val <= r.max) || rules[rules.length - 1];
+  const rng = document.getElementById(`r-${id}`);
+  const num = document.getElementById(id);
 
-      showResult(data);
+  tag.textContent        = r.lbl;
+  tag.style.display      = 'inline-flex';
+  tag.style.background   = r.css;
+  tag.style.border       = `1px solid ${r.brd}`;
+  tag.style.color        = r.col;
 
-    } catch {
-      setError('Cannot reach the API. Ensure the Flask server is running on localhost:5000.');
-    } finally {
+  /* tint the slider thumb to match */
+  if (rng) {
+    rng.style.setProperty('--track-fill', r.col);
+    rng.style.setProperty('--thumb-color', r.col);
+    rng.style.setProperty('--thumb-glow', r.css);
+  }
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SLIDER ↔ NUMBER SYNC
+═══════════════════════════════════════════════════════════════ */
+function updateSliderProgress(rng) {
+  const mn  = +rng.min, mx = +rng.max, val = +rng.value;
+  const pct = ((val - mn) / (mx - mn) * 100).toFixed(1) + '%';
+  rng.style.setProperty('--pct', pct);
+}
+
+function sync(id, val, fromNum = false) {
+  const rng = document.getElementById(`r-${id}`);
+  const num = document.getElementById(id);
+  if (!fromNum && rng) { num.value = parseFloat(val); }
+  if (fromNum  && rng) { rng.value = parseFloat(val); }
+  if (rng) updateSliderProgress(rng);
+  updateStatus(id, val);
+}
+
+/* initialise all sliders on load */
+['pregnancies','glucose','blood_pressure','skin_thickness','insulin','bmi','dpf','age'].forEach(id => {
+  const rng = document.getElementById(`r-${id}`);
+  if (rng) { updateSliderProgress(rng); updateStatus(id, rng.value); }
+});
+
+/* ═══════════════════════════════════════════════════════════════
+   PRESETS
+═══════════════════════════════════════════════════════════════ */
+const PRESETS = {
+  low:      { pregnancies:1,  glucose:88,  blood_pressure:66, skin_thickness:16, insulin:48,  bmi:21.6, dpf:0.17, age:24 },
+  moderate: { pregnancies:3,  glucose:128, blood_pressure:77, skin_thickness:27, insulin:138, bmi:30.2, dpf:0.42, age:37 },
+  high:     { pregnancies:7,  glucose:174, blood_pressure:90, skin_thickness:44, insulin:295, bmi:43.1, dpf:0.93, age:57 },
+};
+
+function loadPreset(key) {
+  const p = PRESETS[key];
+  const map = { pregnancies:'pregnancies', glucose:'glucose', blood_pressure:'blood_pressure',
+                skin_thickness:'skin_thickness', insulin:'insulin', bmi:'bmi', dpf:'dpf', age:'age' };
+  Object.entries(map).forEach(([fid, pk]) => {
+    const val = p[pk];
+    document.getElementById(fid).value = val;
+    const rng = document.getElementById(`r-${fid}`);
+    if (rng) { rng.value = val; updateSliderProgress(rng); }
+    updateStatus(fid, val);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   UI HELPERS
+═══════════════════════════════════════════════════════════════ */
+function setErr(msg) {
+  const box = document.getElementById('errBox');
+  document.getElementById('errTxt').textContent = msg;
+  box.classList.toggle('show', !!msg);
+}
+
+function setLoading(on) {
+  const btn = document.getElementById('runBtn');
+  const rc  = document.getElementById('resultCard');
+  btn.disabled = on;
+  btn.classList.toggle('loading', on);
+  document.getElementById('btnTxt').textContent = on ? 'Analyzing…' : 'Run Analysis';
+  rc.classList.toggle('scanning', on);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   GAUGE
+═══════════════════════════════════════════════════════════════ */
+function animateGauge(prob, level) {
+  const r   = RISK[level] || RISK.low;
+  const arc = document.getElementById('gFill');
+  const out = document.getElementById('gOuter');
+  const pct = document.getElementById('gPct');
+
+  arc.style.strokeDashoffset = (CIRC * (1 - prob)).toFixed(2);
+  arc.style.stroke           = r.color;
+  out.style.strokeDashoffset = (CIRC * (1 - prob)).toFixed(2);
+  out.style.stroke           = r.color;
+
+  pct.textContent  = `${Math.round(prob * 100)}%`;
+  pct.style.color  = r.light;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SHAP BARS
+═══════════════════════════════════════════════════════════════ */
+function renderShap(contributions) {
+  const wrap = document.getElementById('shapBars');
+  wrap.innerHTML = '';
+  const maxA = Math.max(...contributions.map(c => Math.abs(c.shap_value)), 1e-6);
+
+  contributions.forEach((c, i) => {
+    const pos  = c.direction === 'increases risk';
+    const pct  = (Math.abs(c.shap_value) / maxA * 100).toFixed(1);
+    const sign = pos ? '+' : '';
+
+    const row = document.createElement('div');
+    row.className = 'sh-row';
+    row.style.animationDelay = `${i * 38}ms`;
+    row.setAttribute('role', 'listitem');
+    row.setAttribute('aria-label', `${c.feature}: ${sign}${c.shap_value.toFixed(3)} — ${c.direction}`);
+    row.title = `${c.feature}: SHAP ${sign}${c.shap_value.toFixed(4)}`;
+
+    row.innerHTML = `
+      <span class="sh-nm">${c.feature}</span>
+      <div class="sh-track" aria-hidden="true">
+        <div class="sh-bar ${pos?'p':'n'}" style="width:${pct}%"></div>
+      </div>
+      <span class="sh-val ${pos?'p':'n'}" aria-hidden="true">${sign}${c.shap_value.toFixed(3)}</span>`;
+
+    wrap.appendChild(row);
+  });
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SHOW RESULT
+═══════════════════════════════════════════════════════════════ */
+function showResult(data) {
+  const level = (data.risk_level || 'low').toLowerCase();
+  const r     = RISK[level] || RISK.low;
+
+  /* ECG changes colour to match risk */
+  setECGColor(r.ecg);
+
+  /* Badge */
+  const badge = document.getElementById('rBadge');
+  badge.className = `r-badge ${level}`;
+  badge.innerHTML = `
+    <svg width="7" height="7" viewBox="0 0 8 8" aria-hidden="true">
+      <circle cx="4" cy="4" r="4" fill="${r.color}"/>
+    </svg>
+    ${r.label}`;
+
+  /* Gauge */
+  animateGauge(data.probability, level);
+
+  /* Stats */
+  const lbl = document.getElementById('sLabel');
+  lbl.textContent = data.prediction;
+  lbl.style.color = r.light;
+  document.getElementById('sProb').textContent = `${(data.probability * 100).toFixed(1)}%`;
+
+  /* SHAP */
+  if (Array.isArray(data.contributions)) renderShap(data.contributions);
+
+  /* Reveal */
+  document.getElementById('emptyS').style.display = 'none';
+  const out = document.getElementById('resOut');
+  out.classList.remove('show');
+  void out.offsetWidth;
+  out.classList.add('show');
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MAIN — RUN ANALYSIS
+═══════════════════════════════════════════════════════════════ */
+async function runAnalysis() {
+  setErr('');
+  setLoading(true);
+
+  const IDS = ['pregnancies','glucose','blood_pressure','skin_thickness','insulin','bmi','dpf','age'];
+  const API_KEYS = ['pregnancies','glucose','blood_pressure','skin_thickness','insulin','bmi','diabetes_pedigree_function','age'];
+  const payload = {};
+
+  for (let i = 0; i < IDS.length; i++) {
+    const v = parseFloat(document.getElementById(IDS[i]).value);
+    if (isNaN(v)) {
+      setErr(`"${IDS[i].replace(/_/g,' ')}" is not a valid number.`);
       setLoading(false);
+      return;
     }
+    payload[API_KEYS[i]] = v;
   }
+
+  try {
+    const res  = await fetch(`${API}/predict/explain`, {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify(payload),
+    });
+    const data = await res.json();
+    if (!res.ok) { setErr(data.error || `Server error (${res.status}).`); setLoading(false); return; }
+    showResult(data);
+  } catch {
+    setErr('Cannot reach the API — ensure Flask is running on localhost:5000.');
+  } finally {
+    setLoading(false);
+  }
+}
 </script>
 </body>
 </html>
