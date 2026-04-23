@@ -124,13 +124,24 @@
     }
     .hd-right{position:relative;z-index:1;display:flex;align-items:center;gap:.85rem}
     .status-pill{
-      display:flex;align-items:center;gap:.45rem;
-      padding:.38rem .9rem;
-      background:var(--sur);border:1px solid var(--brd);border-radius:100px;
-      font-size:.74rem;font-weight:500;color:var(--t2);
+      display:flex;align-items:center;gap:.6rem;
+      padding:.55rem 1.1rem;
+      background:rgba(16,185,129,0.10);
+      border:1.5px solid rgba(16,185,129,0.35);
+      border-radius:100px;
+      font-size:.82rem;font-weight:700;
+      color:#34D399;
+      letter-spacing:.04em;
+      box-shadow:0 0 14px rgba(16,185,129,0.18);
     }
-    .sdot{width:6px;height:6px;border-radius:50%;background:var(--lo);animation:blink 2.5s ease infinite}
-    @keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+    .sdot{
+      width:9px;height:9px;border-radius:50%;
+      background:#10B981;
+      box-shadow:0 0 8px #10B981, 0 0 16px rgba(16,185,129,0.5);
+      animation:blink 2s ease infinite;
+      flex-shrink:0;
+    }
+    @keyframes blink{0%,100%{opacity:1;box-shadow:0 0 8px #10B981,0 0 16px rgba(16,185,129,.5)}50%{opacity:.5;box-shadow:0 0 4px #10B981}}
 
     /* ── Main grid ─────────────────────────────────────── */
     .wrap{
