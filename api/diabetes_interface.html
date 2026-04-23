@@ -4,308 +4,847 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Diabetes Risk Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@300;400;500;600;700;800&display=swap" rel="stylesheet" />
   <style>
+    /* ── Design tokens ─────────────────────────────────────────── */
+    :root {
+      --bg:           #060C1A;
+      --surface:      #0D1626;
+      --glass:        rgba(255,255,255,0.05);
+      --glass-hover:  rgba(255,255,255,0.08);
+      --glass-border: rgba(255,255,255,0.09);
+      --teal:         #0891B2;
+      --teal-lt:      #22D3EE;
+      --teal-glow:    rgba(8,145,178,0.20);
+      --text-1:       #F0FDFA;
+      --text-2:       #94A3B8;
+      --text-3:       #475569;
+      --high:         #EF4444;
+      --high-soft:    rgba(239,68,68,0.12);
+      --high-border:  rgba(239,68,68,0.28);
+      --mod:          #F97316;
+      --mod-soft:     rgba(249,115,22,0.12);
+      --mod-border:   rgba(249,115,22,0.28);
+      --low:          #22C55E;
+      --low-soft:     rgba(34,197,94,0.12);
+      --low-border:   rgba(34,197,94,0.28);
+      --r:            14px;
+      --r-sm:         9px;
+      --ease:         cubic-bezier(0.4,0,0.2,1);
+    }
+
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
 
     body {
-      font-family: 'Segoe UI', system-ui, sans-serif;
-      background: #f0f4f8;
+      font-family: 'Figtree', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text-1);
       min-height: 100vh;
+      -webkit-font-smoothing: antialiased;
+    }
+
+    /* Ambient background orbs */
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 600px; height: 600px;
+      top: -200px; left: -150px;
+      background: radial-gradient(circle, rgba(8,145,178,0.07) 0%, transparent 70%);
+    }
+    body::after {
+      width: 500px; height: 500px;
+      bottom: -150px; right: -100px;
+      background: radial-gradient(circle, rgba(34,197,94,0.05) 0%, transparent 70%);
+    }
+
+    /* ── Header ────────────────────────────────────────────────── */
+    header {
+      position: sticky; top: 0; z-index: 50;
+      background: rgba(6,12,26,0.85);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 0 2rem;
+      height: 64px;
       display: flex;
       align-items: center;
-      justify-content: center;
-      padding: 2rem;
+      justify-content: space-between;
     }
 
+    .brand {
+      display: flex; align-items: center; gap: 0.85rem;
+    }
+    .brand-icon {
+      width: 38px; height: 38px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-lt) 100%);
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 0 20px var(--teal-glow);
+      flex-shrink: 0;
+    }
+    .brand-name  { font-size: 1rem; font-weight: 700; color: var(--text-1); letter-spacing: -0.01em; }
+    .brand-badge {
+      font-size: 0.68rem; font-weight: 600; letter-spacing: 0.09em;
+      text-transform: uppercase; color: var(--teal-lt);
+      background: rgba(34,211,238,0.10);
+      border: 1px solid rgba(34,211,238,0.20);
+      padding: 0.18rem 0.55rem;
+      border-radius: 100px;
+    }
+
+    .status-pill {
+      display: flex; align-items: center; gap: 0.45rem;
+      padding: 0.38rem 0.9rem;
+      background: var(--glass);
+      border: 1px solid var(--glass-border);
+      border-radius: 100px;
+      font-size: 0.75rem; font-weight: 500; color: var(--text-2);
+    }
+    .status-dot {
+      width: 6px; height: 6px; border-radius: 50%;
+      background: var(--low);
+      animation: blink 2.4s ease infinite;
+    }
+    @keyframes blink { 0%,100%{opacity:1} 50%{opacity:.35} }
+
+    /* ── Layout ────────────────────────────────────────────────── */
+    .wrapper {
+      position: relative; z-index: 1;
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 3rem;
+      display: grid;
+      grid-template-columns: minmax(0,1fr) minmax(0,1fr);
+      gap: 1.5rem;
+      align-items: start;
+    }
+    @media (max-width: 860px) {
+      .wrapper { grid-template-columns: 1fr; }
+    }
+
+    /* ── Glass card ────────────────────────────────────────────── */
     .card {
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 4px 24px rgba(0,0,0,0.08);
-      max-width: 760px;
-      width: 100%;
-      padding: 2.5rem;
+      background: var(--glass);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r);
+      overflow: hidden;
     }
-
-    h1 {
-      font-size: 1.6rem;
-      color: #1a202c;
-      margin-bottom: 0.4rem;
+    .card-head {
+      padding: 1.1rem 1.5rem;
+      border-bottom: 1px solid var(--glass-border);
+      display: flex; align-items: center; gap: 0.75rem;
     }
-
-    .subtitle {
-      color: #718096;
-      font-size: 0.9rem;
-      margin-bottom: 2rem;
+    .card-icon {
+      width: 30px; height: 30px; border-radius: 8px;
+      background: var(--teal-glow);
+      border: 1px solid rgba(8,145,178,0.25);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--teal-lt); flex-shrink: 0;
     }
+    .card-title { font-size: 0.88rem; font-weight: 600; color: var(--text-1); }
+    .card-body  { padding: 1.5rem; }
 
-    .grid {
+    /* ── Presets ───────────────────────────────────────────────── */
+    .presets-label {
+      font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-3);
+      margin-bottom: 0.5rem;
+    }
+    .presets-row {
+      display: flex; gap: 0.5rem; margin-bottom: 1.4rem;
+    }
+    .preset {
+      flex: 1; padding: 0.42rem 0.5rem;
+      border-radius: var(--r-sm);
+      border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.03);
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.73rem; font-weight: 600;
+      color: var(--text-2); cursor: pointer;
+      transition: all 0.18s var(--ease);
+    }
+    .preset:hover { background: rgba(255,255,255,0.07); }
+    .preset.pl:hover { border-color: var(--low);  color: #4ADE80; }
+    .preset.pm:hover { border-color: var(--mod);  color: #FB923C; }
+    .preset.ph:hover { border-color: var(--high); color: #F87171; }
+    .preset:focus-visible { outline: 2px solid var(--teal); outline-offset: 2px; }
+
+    /* ── Form grid ─────────────────────────────────────────────── */
+    .form-grid {
       display: grid;
       grid-template-columns: 1fr 1fr;
-      gap: 1.2rem;
+      gap: 1rem 1.1rem;
+    }
+    .field { display: flex; flex-direction: column; gap: 0.28rem; }
+    .field.full { grid-column: 1 / -1; }
+
+    .field label {
+      font-size: 0.72rem; font-weight: 700;
+      color: var(--text-2);
+      text-transform: uppercase; letter-spacing: 0.07em;
+      display: flex; align-items: baseline; gap: 0.35rem;
+    }
+    .field label span {
+      font-size: 0.68rem; font-weight: 400;
+      text-transform: none; letter-spacing: 0; color: var(--text-3);
     }
 
-    label {
-      display: block;
-      font-size: 0.82rem;
-      font-weight: 600;
-      color: #4a5568;
-      margin-bottom: 0.35rem;
-    }
-
-    input[type="number"] {
+    .field input[type="number"] {
+      -moz-appearance: textfield;
       width: 100%;
-      padding: 0.6rem 0.85rem;
-      border: 1.5px solid #e2e8f0;
-      border-radius: 8px;
-      font-size: 0.95rem;
-      color: #2d3748;
-      transition: border-color 0.2s;
+      padding: 0.62rem 0.85rem;
+      background: rgba(255,255,255,0.04);
+      border: 1.5px solid rgba(255,255,255,0.09);
+      border-radius: var(--r-sm);
+      color: var(--text-1);
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.92rem; font-weight: 500;
+      transition: border-color 0.18s var(--ease), background 0.18s var(--ease), box-shadow 0.18s var(--ease);
       outline: none;
     }
-
-    input[type="number"]:focus {
-      border-color: #4299e1;
+    .field input[type="number"]::-webkit-inner-spin-button,
+    .field input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; }
+    .field input[type="number"]:hover:not(:focus) {
+      border-color: rgba(255,255,255,0.17);
+      background: rgba(255,255,255,0.05);
+    }
+    .field input[type="number"]:focus {
+      border-color: var(--teal);
+      background: rgba(8,145,178,0.07);
+      box-shadow: 0 0 0 3px rgba(8,145,178,0.18);
+    }
+    .field input[type="number"]:focus-visible {
+      outline: none;
+    }
+    .field-hint {
+      font-size: 0.67rem; color: var(--text-3); line-height: 1.3;
     }
 
-    .hint {
-      font-size: 0.74rem;
-      color: #a0aec0;
+    /* ── Button ────────────────────────────────────────────────── */
+    .btn-run {
+      margin-top: 1.35rem; width: 100%;
+      padding: 0.82rem 1rem;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-lt) 100%);
+      color: #fff;
+      font-family: 'Figtree', sans-serif;
+      font-size: 0.92rem; font-weight: 700; letter-spacing: 0.01em;
+      border: none; border-radius: var(--r-sm);
+      cursor: pointer; display: flex; align-items: center;
+      justify-content: center; gap: 0.55rem;
+      transition: transform 0.15s var(--ease), box-shadow 0.15s var(--ease), opacity 0.15s;
+      position: relative; overflow: hidden;
+    }
+    .btn-run:hover:not(:disabled) {
+      transform: translateY(-1px);
+      box-shadow: 0 10px 28px rgba(8,145,178,0.38);
+    }
+    .btn-run:active:not(:disabled) { transform: translateY(0); box-shadow: none; }
+    .btn-run:disabled { cursor: not-allowed; opacity: 0.65; }
+    .btn-run:focus-visible { outline: 2px solid var(--teal-lt); outline-offset: 3px; }
+
+    /* shimmer on loading */
+    .btn-run.loading::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%);
+      animation: shimmer 1.4s linear infinite;
+    }
+    @keyframes shimmer { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+
+    /* spinner in button */
+    .spinner {
+      display: none;
+      width: 14px; height: 14px;
+      border: 2px solid rgba(255,255,255,0.35);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+    .btn-run.loading .spinner { display: block; }
+    .btn-run.loading .btn-icon { display: none; }
+    @keyframes spin { to{transform:rotate(360deg)} }
+
+    /* ── Error box ─────────────────────────────────────────────── */
+    .error-box {
+      margin-top: 0.85rem; display: none;
+      padding: 0.7rem 0.9rem;
+      background: var(--high-soft);
+      border: 1px solid var(--high-border);
+      border-radius: var(--r-sm);
+      color: #FCA5A5; font-size: 0.8rem;
+      align-items: flex-start; gap: 0.5rem;
+      animation: fadeIn 0.2s ease;
+    }
+    .error-box.show { display: flex; }
+
+    /* ── Empty state ───────────────────────────────────────────── */
+    .empty-state {
+      padding: 3.5rem 2rem;
+      display: flex; flex-direction: column;
+      align-items: center; gap: 0.85rem; text-align: center;
+    }
+    .empty-ring {
+      width: 60px; height: 60px; border-radius: 50%;
+      border: 1.5px dashed rgba(255,255,255,0.12);
+      display: flex; align-items: center; justify-content: center;
+      color: var(--text-3);
+    }
+    .empty-h  { font-size: 0.9rem; font-weight: 600; color: var(--text-2); }
+    .empty-p  { font-size: 0.78rem; color: var(--text-3); max-width: 200px; line-height: 1.55; }
+
+    /* ── Result output ─────────────────────────────────────────── */
+    #resultOut {
+      display: none;
+      animation: fadeIn 0.35s var(--ease);
+    }
+    #resultOut.show { display: block; }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(6px)} to{opacity:1;transform:translateY(0)} }
+
+    /* Risk badge */
+    .risk-badge {
+      display: inline-flex; align-items: center; gap: 0.38rem;
+      padding: 0.3rem 0.75rem; border-radius: 100px;
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      margin-bottom: 1.35rem;
+    }
+    .risk-badge.high     { background: var(--high-soft); color: #F87171; border: 1px solid var(--high-border); }
+    .risk-badge.moderate { background: var(--mod-soft);  color: #FB923C; border: 1px solid var(--mod-border);  }
+    .risk-badge.low      { background: var(--low-soft);  color: #4ADE80; border: 1px solid var(--low-border);  }
+
+    /* ── Gauge ─────────────────────────────────────────────────── */
+    .gauge-wrap {
+      display: flex; justify-content: center; margin-bottom: 1.5rem;
+    }
+    .gauge-container {
+      position: relative; width: 160px; height: 160px;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .gauge-svg {
+      position: absolute; inset: 0;
+      transform: rotate(-90deg);
+    }
+    .g-track {
+      fill: none;
+      stroke: rgba(255,255,255,0.06);
+      stroke-width: 11;
+    }
+    .g-fill {
+      fill: none;
+      stroke-width: 11;
+      stroke-linecap: round;
+      stroke-dasharray: 439.82; /* 2π × 70 */
+      stroke-dashoffset: 439.82;
+      transition: stroke-dashoffset 0.9s var(--ease), stroke 0.4s ease;
+      filter: drop-shadow(0 0 6px currentColor);
+    }
+    .gauge-info {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      text-align: center; gap: 0;
+    }
+    .gauge-pct {
+      font-size: 2.2rem; font-weight: 800;
+      letter-spacing: -0.05em; line-height: 1;
+    }
+    .gauge-sub {
+      font-size: 0.67rem; font-weight: 600; letter-spacing: 0.08em;
+      text-transform: uppercase; color: var(--text-3);
       margin-top: 0.2rem;
     }
 
-    button {
-      margin-top: 1.8rem;
-      width: 100%;
-      padding: 0.85rem;
-      background: #4299e1;
-      color: #fff;
-      font-size: 1rem;
-      font-weight: 600;
-      border: none;
-      border-radius: 10px;
-      cursor: pointer;
-      transition: background 0.2s;
+    /* ── Stats row ─────────────────────────────────────────────── */
+    .stats-row {
+      display: grid; grid-template-columns: 1fr 1px 1fr 1px 1fr;
+      background: rgba(255,255,255,0.03);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--r-sm);
+      margin-bottom: 1.35rem; overflow: hidden;
+    }
+    .stat {
+      padding: 0.7rem 0.6rem; text-align: center;
+    }
+    .stat-val {
+      font-size: 0.92rem; font-weight: 700; color: var(--text-1);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+    }
+    .stat-key {
+      font-size: 0.65rem; font-weight: 600;
+      text-transform: uppercase; letter-spacing: 0.07em;
+      color: var(--text-3); margin-top: 0.1rem;
+    }
+    .stat-div {
+      background: var(--glass-border);
+      align-self: stretch;
     }
 
-    button:hover { background: #3182ce; }
-    button:disabled { background: #a0aec0; cursor: not-allowed; }
-
-    #result {
-      margin-top: 1.8rem;
-      padding: 1.4rem;
-      border-radius: 10px;
-      display: none;
+    /* ── SHAP section ──────────────────────────────────────────── */
+    .shap-head {
+      display: flex; align-items: center; gap: 0.45rem;
+      font-size: 0.72rem; font-weight: 700;
+      text-transform: uppercase; letter-spacing: 0.08em;
+      color: var(--text-2); margin-bottom: 0.9rem;
+    }
+    .shap-head-icon {
+      width: 20px; height: 20px; border-radius: 5px;
+      background: rgba(249,115,22,0.12);
+      border: 1px solid rgba(249,115,22,0.20);
+      display: flex; align-items: center; justify-content: center;
+      color: #FB923C; flex-shrink: 0;
     }
 
-    #result.high     { background: #fff5f5; border: 1.5px solid #fc8181; }
-    #result.moderate { background: #fffbeb; border: 1.5px solid #f6ad55; }
-    #result.low      { background: #f0fff4; border: 1.5px solid #68d391; }
-
-    .result-label {
-      font-size: 1.25rem;
-      font-weight: 700;
-      margin-bottom: 0.5rem;
+    .shap-row {
+      display: grid;
+      grid-template-columns: 9.5rem 1fr 3.8rem;
+      align-items: center; gap: 0.55rem;
+      margin-bottom: 0.6rem;
+      opacity: 0;
+      animation: slideUp 0.28s var(--ease) forwards;
     }
+    @keyframes slideUp { from{opacity:0;transform:translateX(-5px)} to{opacity:1;transform:translateX(0)} }
 
-    .result-label.high     { color: #c53030; }
-    .result-label.moderate { color: #c05621; }
-    .result-label.low      { color: #276749; }
-
-    .result-detail {
-      font-size: 0.9rem;
-      color: #4a5568;
-      line-height: 1.7;
+    .shap-name {
+      font-size: 0.76rem; color: var(--text-2);
+      white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
     }
-
-    .contributions {
-      margin-top: 1.2rem;
+    .shap-track {
+      height: 5px; background: rgba(255,255,255,0.05);
+      border-radius: 100px; overflow: hidden;
     }
-
-    .contributions h3 {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #4a5568;
-      margin-bottom: 0.8rem;
-      text-transform: uppercase;
-      letter-spacing: 0.05em;
+    .shap-fill {
+      height: 100%; border-radius: 100px;
+      transition: width 0.55s var(--ease);
     }
+    .shap-fill.pos { background: linear-gradient(90deg, #DC2626, #F87171); }
+    .shap-fill.neg { background: linear-gradient(90deg, #15803D, #4ADE80); }
 
-    .bar-row {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
-      margin-bottom: 0.5rem;
-      font-size: 0.82rem;
+    .shap-val {
+      font-size: 0.71rem; font-weight: 700;
+      text-align: right; font-variant-numeric: tabular-nums;
     }
+    .shap-val.pos { color: #F87171; }
+    .shap-val.neg { color: #4ADE80; }
 
-    .bar-name  { width: 11rem; color: #4a5568; flex-shrink: 0; }
-    .bar-track { flex: 1; background: #edf2f7; border-radius: 4px; height: 10px; overflow: hidden; }
-    .bar-fill  { height: 100%; border-radius: 4px; }
-    .bar-fill.pos { background: #fc8181; }
-    .bar-fill.neg { background: #68d391; }
-    .bar-val   { width: 4rem; text-align: right; color: #718096; }
-
-    .error-box {
-      margin-top: 1.5rem;
-      padding: 1rem;
-      background: #fff5f5;
-      border: 1.5px solid #fc8181;
-      border-radius: 8px;
-      color: #c53030;
-      font-size: 0.9rem;
-      display: none;
-    }
-
-    .disclaimer {
-      margin-top: 1.5rem;
-      font-size: 0.78rem;
-      color: #a0aec0;
+    /* ── Footer ────────────────────────────────────────────────── */
+    footer {
+      position: relative; z-index: 1;
       text-align: center;
+      padding: 1.25rem 2rem 2rem;
+      color: var(--text-3);
+      font-size: 0.72rem; line-height: 1.65;
+      border-top: 1px solid var(--glass-border);
+    }
+
+    /* ── Reduced motion ────────────────────────────────────────── */
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        transition-duration: 0.01ms !important;
+      }
     }
   </style>
 </head>
 <body>
-<div class="card">
-  <h1>Diabetes Risk Predictor</h1>
-  <p class="subtitle">Enter patient lab values to get an XGBoost prediction with SHAP feature explanations.</p>
 
-  <div class="grid">
-    <div>
-      <label>Pregnancies</label>
-      <input type="number" id="pregnancies" min="0" max="17" step="1" value="2" />
-      <p class="hint">Range: 0 – 17</p>
+<!-- ════════════════ HEADER ════════════════ -->
+<header>
+  <div class="brand">
+    <div class="brand-icon" aria-hidden="true">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/>
+      </svg>
     </div>
     <div>
-      <label>Glucose (mg/dL)</label>
-      <input type="number" id="glucose" min="50" max="250" step="1" value="120" />
-      <p class="hint">Range: 50 – 250</p>
+      <div class="brand-name">Diabetes Risk Predictor</div>
     </div>
-    <div>
-      <label>Blood Pressure (mm Hg)</label>
-      <input type="number" id="blood_pressure" min="40" max="130" step="1" value="72" />
-      <p class="hint">Range: 40 – 130</p>
-    </div>
-    <div>
-      <label>Skin Thickness (mm)</label>
-      <input type="number" id="skin_thickness" min="0" max="100" step="1" value="20" />
-      <p class="hint">Range: 0 – 100</p>
-    </div>
-    <div>
-      <label>Insulin (mu U/ml)</label>
-      <input type="number" id="insulin" min="0" max="900" step="1" value="80" />
-      <p class="hint">Range: 0 – 900</p>
-    </div>
-    <div>
-      <label>BMI</label>
-      <input type="number" id="bmi" min="10" max="70" step="0.1" value="25.0" />
-      <p class="hint">Range: 10.0 – 70.0</p>
-    </div>
-    <div>
-      <label>Diabetes Pedigree Function</label>
-      <input type="number" id="diabetes_pedigree_function" min="0" max="2.5" step="0.01" value="0.35" />
-      <p class="hint">Range: 0.0 – 2.5</p>
-    </div>
-    <div>
-      <label>Age</label>
-      <input type="number" id="age" min="18" max="90" step="1" value="30" />
-      <p class="hint">Range: 18 – 90</p>
-    </div>
+    <div class="brand-badge">XGBoost · SHAP</div>
   </div>
 
-  <button id="predictBtn" onclick="predict()">Analyze Patient</button>
-
-  <div class="error-box" id="errorBox"></div>
-
-  <div id="result">
-    <div class="result-label" id="resultLabel"></div>
-    <div class="result-detail" id="resultDetail"></div>
-    <div class="contributions" id="contributionsSection">
-      <h3>Feature Contributions (SHAP)</h3>
-      <div id="contributionBars"></div>
-    </div>
+  <div class="status-pill" role="status" aria-label="API connection status">
+    <div class="status-dot" aria-hidden="true"></div>
+    <span>API Live</span>
   </div>
+</header>
 
-  <p class="disclaimer">For research purposes only. Always consult a licensed physician for medical decisions.</p>
+<!-- ════════════════ MAIN ════════════════ -->
+<div class="wrapper">
+
+  <!-- ── LEFT: Input ─────────────────────────────────── -->
+  <section class="card" aria-label="Patient parameter input">
+    <div class="card-head">
+      <div class="card-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+          <circle cx="12" cy="7" r="4"/>
+        </svg>
+      </div>
+      <span class="card-title">Patient Parameters</span>
+    </div>
+
+    <div class="card-body">
+
+      <!-- Quick presets -->
+      <div class="presets-label">Quick Presets</div>
+      <div class="presets-row">
+        <button class="preset pl" type="button" onclick="loadPreset('low')"      aria-label="Load low-risk preset values">Low Risk</button>
+        <button class="preset pm" type="button" onclick="loadPreset('moderate')" aria-label="Load moderate-risk preset values">Moderate</button>
+        <button class="preset ph" type="button" onclick="loadPreset('high')"     aria-label="Load high-risk preset values">High Risk</button>
+      </div>
+
+      <!-- Input form -->
+      <form id="form" onsubmit="return false;" novalidate>
+        <div class="form-grid">
+
+          <div class="field">
+            <label for="pregnancies">Pregnancies</label>
+            <input type="number" id="pregnancies" min="0" max="17" step="1" value="2" aria-describedby="h-preg" />
+            <span class="field-hint" id="h-preg">0 – 17</span>
+          </div>
+
+          <div class="field">
+            <label for="glucose">Glucose <span>mg/dL</span></label>
+            <input type="number" id="glucose" min="50" max="250" step="1" value="120" aria-describedby="h-glu" />
+            <span class="field-hint" id="h-glu">50 – 250</span>
+          </div>
+
+          <div class="field">
+            <label for="blood_pressure">Blood Pressure <span>mm Hg</span></label>
+            <input type="number" id="blood_pressure" min="40" max="130" step="1" value="72" aria-describedby="h-bp" />
+            <span class="field-hint" id="h-bp">40 – 130</span>
+          </div>
+
+          <div class="field">
+            <label for="skin_thickness">Skin Thickness <span>mm</span></label>
+            <input type="number" id="skin_thickness" min="0" max="100" step="1" value="20" aria-describedby="h-sk" />
+            <span class="field-hint" id="h-sk">0 – 100</span>
+          </div>
+
+          <div class="field">
+            <label for="insulin">Insulin <span>mu U/ml</span></label>
+            <input type="number" id="insulin" min="0" max="900" step="1" value="80" aria-describedby="h-ins" />
+            <span class="field-hint" id="h-ins">0 – 900</span>
+          </div>
+
+          <div class="field">
+            <label for="bmi">BMI</label>
+            <input type="number" id="bmi" min="10" max="70" step="0.1" value="25.0" aria-describedby="h-bmi" />
+            <span class="field-hint" id="h-bmi">10.0 – 70.0</span>
+          </div>
+
+          <div class="field full">
+            <label for="dpf">Diabetes Pedigree Function</label>
+            <input type="number" id="dpf" min="0" max="2.5" step="0.01" value="0.35" aria-describedby="h-dpf" />
+            <span class="field-hint" id="h-dpf">0.0 – 2.5 &nbsp;·&nbsp; Hereditary risk score</span>
+          </div>
+
+          <div class="field">
+            <label for="age">Age</label>
+            <input type="number" id="age" min="18" max="90" step="1" value="30" aria-describedby="h-age" />
+            <span class="field-hint" id="h-age">18 – 90</span>
+          </div>
+
+        </div>
+
+        <button class="btn-run" id="runBtn" type="submit" onclick="runAnalysis()" aria-label="Run diabetes risk analysis">
+          <div class="spinner" aria-hidden="true"></div>
+          <svg class="btn-icon" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+          <span id="btnTxt">Run Analysis</span>
+        </button>
+
+        <div class="error-box" id="errBox" role="alert" aria-live="assertive">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" style="flex-shrink:0;margin-top:1px">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+          <span id="errTxt"></span>
+        </div>
+      </form>
+
+    </div>
+  </section>
+
+  <!-- ── RIGHT: Results ───────────────────────────────── -->
+  <section class="card" aria-label="Prediction results" aria-live="polite" aria-atomic="false">
+    <div class="card-head">
+      <div class="card-icon" aria-hidden="true">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+        </svg>
+      </div>
+      <span class="card-title">Risk Assessment</span>
+    </div>
+
+    <div class="card-body">
+
+      <!-- Empty state -->
+      <div class="empty-state" id="emptyState">
+        <div class="empty-ring" aria-hidden="true">
+          <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="12" y1="8" x2="12" y2="12"/>
+            <line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div class="empty-h">Awaiting Input</div>
+        <p class="empty-p">Enter patient values and click Run Analysis to generate a clinical risk prediction.</p>
+      </div>
+
+      <!-- Result output -->
+      <div id="resultOut">
+
+        <!-- Risk badge -->
+        <div id="badge" class="risk-badge" role="status"></div>
+
+        <!-- Circular gauge -->
+        <div class="gauge-wrap">
+          <div class="gauge-container" role="img" aria-labelledby="gaugeAriaLabel">
+            <svg class="gauge-svg" width="160" height="160" viewBox="0 0 160 160" aria-hidden="true">
+              <circle class="g-track" cx="80" cy="80" r="70"/>
+              <circle class="g-fill"  cx="80" cy="80" r="70" id="gArc"/>
+            </svg>
+            <div class="gauge-info">
+              <div class="gauge-pct" id="gPct" aria-hidden="true">—</div>
+              <div class="gauge-sub" aria-hidden="true">Risk Score</div>
+            </div>
+          </div>
+          <span id="gaugeAriaLabel" class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;"></span>
+        </div>
+
+        <!-- Stats row -->
+        <div class="stats-row" role="list">
+          <div class="stat" role="listitem">
+            <div class="stat-val" id="sLabel">—</div>
+            <div class="stat-key">Diagnosis</div>
+          </div>
+          <div class="stat-div" aria-hidden="true"></div>
+          <div class="stat" role="listitem">
+            <div class="stat-val" id="sProb">—</div>
+            <div class="stat-key">Probability</div>
+          </div>
+          <div class="stat-div" aria-hidden="true"></div>
+          <div class="stat" role="listitem">
+            <div class="stat-val">40%</div>
+            <div class="stat-key">Threshold</div>
+          </div>
+        </div>
+
+        <!-- SHAP contributions -->
+        <div>
+          <div class="shap-head">
+            <div class="shap-head-icon" aria-hidden="true">
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+              </svg>
+            </div>
+            Feature Contributions (SHAP)
+          </div>
+          <div id="shapBars" role="list" aria-label="SHAP feature contribution bars"></div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
 </div>
 
+<!-- ════════════════ FOOTER ════════════════ -->
+<footer>
+  <strong style="color:var(--text-2);font-weight:600;">Clinical Disclaimer</strong><br>
+  This interface is intended for research and educational purposes only. Predictions are produced by a
+  machine learning model and do not constitute medical advice, diagnosis, or treatment.
+  Always consult a qualified healthcare professional for clinical decisions.
+</footer>
+
 <script>
-  const API = "http://localhost:5000";
+  /* ── Config ──────────────────────────────────────────────────── */
+  const API_URL   = 'http://localhost:5000';
+  const CIRC      = 2 * Math.PI * 70;  // ≈ 439.82 (r = 70)
 
-  async function predict() {
-    const btn = document.getElementById("predictBtn");
-    const errorBox = document.getElementById("errorBox");
-    const result   = document.getElementById("result");
+  /* ── Risk palette ────────────────────────────────────────────── */
+  const RISK = {
+    high:     { color: '#EF4444', light: '#F87171', label: 'High Risk' },
+    moderate: { color: '#F97316', light: '#FB923C', label: 'Moderate Risk' },
+    low:      { color: '#22C55E', light: '#4ADE80', label: 'Low Risk' },
+  };
 
-    btn.disabled = true;
-    btn.textContent = "Analyzing...";
-    errorBox.style.display = "none";
-    result.style.display   = "none";
+  /* ── Presets ─────────────────────────────────────────────────── */
+  const PRESETS = {
+    low:      { pregnancies:1,  glucose:88,  blood_pressure:66, skin_thickness:16, insulin:50,  bmi:21.8, dpf:0.17, age:24 },
+    moderate: { pregnancies:3,  glucose:128, blood_pressure:76, skin_thickness:28, insulin:135, bmi:30.1, dpf:0.41, age:37 },
+    high:     { pregnancies:7,  glucose:172, blood_pressure:90, skin_thickness:44, insulin:295, bmi:43.0, dpf:0.93, age:57 },
+  };
 
-    const fields = ["pregnancies","glucose","blood_pressure","skin_thickness",
-                    "insulin","bmi","diabetes_pedigree_function","age"];
+  const FIELD_MAP = {
+    pregnancies:'pregnancies', glucose:'glucose', blood_pressure:'blood_pressure',
+    skin_thickness:'skin_thickness', insulin:'insulin', bmi:'bmi',
+    dpf:'diabetes_pedigree_function', age:'age',
+  };
+
+  function loadPreset(key) {
+    const p = PRESETS[key];
+    document.getElementById('pregnancies').value    = p.pregnancies;
+    document.getElementById('glucose').value        = p.glucose;
+    document.getElementById('blood_pressure').value = p.blood_pressure;
+    document.getElementById('skin_thickness').value = p.skin_thickness;
+    document.getElementById('insulin').value        = p.insulin;
+    document.getElementById('bmi').value            = p.bmi;
+    document.getElementById('dpf').value            = p.dpf;
+    document.getElementById('age').value            = p.age;
+  }
+
+  /* ── UI helpers ──────────────────────────────────────────────── */
+  function setError(msg) {
+    const box = document.getElementById('errBox');
+    document.getElementById('errTxt').textContent = msg;
+    box.classList.toggle('show', !!msg);
+  }
+
+  function setLoading(on) {
+    const btn = document.getElementById('runBtn');
+    btn.disabled = on;
+    btn.classList.toggle('loading', on);
+    document.getElementById('btnTxt').textContent = on ? 'Analyzing…' : 'Run Analysis';
+  }
+
+  /* ── Gauge ───────────────────────────────────────────────────── */
+  function animateGauge(prob, level) {
+    const arc   = document.getElementById('gArc');
+    const pctEl = document.getElementById('gPct');
+    const r     = RISK[level] || RISK.low;
+
+    arc.style.stroke          = r.color;
+    arc.style.strokeDashoffset = (CIRC * (1 - prob)).toFixed(3);
+    pctEl.textContent          = `${Math.round(prob * 100)}%`;
+    pctEl.style.color          = r.light;
+
+    document.getElementById('gaugeAriaLabel').textContent =
+      `Risk score: ${Math.round(prob * 100)}% — ${r.label}`;
+  }
+
+  /* ── SHAP bars ───────────────────────────────────────────────── */
+  function renderShap(contributions) {
+    const wrap  = document.getElementById('shapBars');
+    wrap.innerHTML = '';
+
+    const maxAbs = Math.max(...contributions.map(c => Math.abs(c.shap_value)), 0.0001);
+
+    contributions.forEach((c, i) => {
+      const pos  = c.direction === 'increases risk';
+      const pct  = ((Math.abs(c.shap_value) / maxAbs) * 100).toFixed(1);
+      const sign = pos ? '+' : '';
+
+      const row  = document.createElement('div');
+      row.className = 'shap-row';
+      row.style.animationDelay = `${i * 35}ms`;
+      row.setAttribute('role', 'listitem');
+      row.setAttribute('aria-label',
+        `${c.feature}: ${sign}${c.shap_value.toFixed(3)} — ${c.direction}`);
+
+      row.innerHTML = `
+        <span class="shap-name" title="${c.feature}">${c.feature}</span>
+        <div class="shap-track" aria-hidden="true">
+          <div class="shap-fill ${pos ? 'pos' : 'neg'}" style="width:${pct}%"></div>
+        </div>
+        <span class="shap-val ${pos ? 'pos' : 'neg'}" aria-hidden="true">
+          ${sign}${c.shap_value.toFixed(3)}
+        </span>`;
+
+      wrap.appendChild(row);
+    });
+  }
+
+  /* ── Show result ─────────────────────────────────────────────── */
+  function showResult(data) {
+    const level = (data.risk_level || 'low').toLowerCase();
+    const r     = RISK[level] || RISK.low;
+
+    /* Badge */
+    const badge = document.getElementById('badge');
+    badge.className = `risk-badge ${level}`;
+    badge.innerHTML = `
+      <svg width="8" height="8" viewBox="0 0 10 10" aria-hidden="true">
+        <circle cx="5" cy="5" r="5" fill="${r.color}"/>
+      </svg>
+      ${r.label}`;
+
+    /* Gauge */
+    animateGauge(data.probability, level);
+
+    /* Stats */
+    const labelEl = document.getElementById('sLabel');
+    labelEl.textContent = data.prediction;
+    labelEl.style.color = r.light;
+    document.getElementById('sProb').textContent = `${(data.probability * 100).toFixed(1)}%`;
+
+    /* SHAP */
+    if (Array.isArray(data.contributions)) renderShap(data.contributions);
+
+    /* Reveal */
+    document.getElementById('emptyState').style.display = 'none';
+    const out = document.getElementById('resultOut');
+    out.classList.remove('show');
+    void out.offsetWidth;           /* force reflow to re-trigger animation */
+    out.classList.add('show');
+  }
+
+  /* ── Main prediction call ────────────────────────────────────── */
+  async function runAnalysis() {
+    setError('');
+    setLoading(true);
+
+    /* Collect & validate */
+    const IDS = ['pregnancies','glucose','blood_pressure','skin_thickness',
+                 'insulin','bmi','dpf','age'];
+    const API_KEYS = ['pregnancies','glucose','blood_pressure','skin_thickness',
+                      'insulin','bmi','diabetes_pedigree_function','age'];
     const payload = {};
-    for (const f of fields) {
-      const val = parseFloat(document.getElementById(f).value);
+
+    for (let i = 0; i < IDS.length; i++) {
+      const val = parseFloat(document.getElementById(IDS[i]).value);
       if (isNaN(val)) {
-        showError(`Please enter a valid number for '${f.replace(/_/g,' ')}'.`);
-        btn.disabled = false; btn.textContent = "Analyze Patient";
+        setError(`"${IDS[i].replace(/_/g,' ')}" is not a valid number.`);
+        setLoading(false);
         return;
       }
-      payload[f] = val;
+      payload[API_KEYS[i]] = val;
     }
 
     try {
-      const res  = await fetch(`${API}/predict/explain`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(payload)
+      const res  = await fetch(`${API_URL}/predict/explain`, {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify(payload),
       });
+
       const data = await res.json();
 
-      if (!res.ok) { showError(data.error || "Prediction failed."); return; }
+      if (!res.ok) {
+        setError(data.error || `Server error (${res.status}). Check the API.`);
+        setLoading(false);
+        return;
+      }
 
-      renderResult(data);
-    } catch (err) {
-      showError("Cannot reach the API. Make sure the server is running on localhost:5000.");
+      showResult(data);
+
+    } catch {
+      setError('Cannot reach the API. Ensure the Flask server is running on localhost:5000.');
     } finally {
-      btn.disabled = false;
-      btn.textContent = "Analyze Patient";
+      setLoading(false);
     }
-  }
-
-  function renderResult(data) {
-    const riskClass = data.risk_level.toLowerCase();
-    const result    = document.getElementById("result");
-
-    result.className = riskClass;
-    result.style.display = "block";
-
-    document.getElementById("resultLabel").className = `result-label ${riskClass}`;
-    document.getElementById("resultLabel").textContent =
-      `${data.prediction} — ${data.risk_level} Risk`;
-
-    document.getElementById("resultDetail").innerHTML =
-      `Probability: <strong>${(data.probability * 100).toFixed(1)}%</strong> &nbsp;|&nbsp;
-       Threshold: ${(data.threshold * 100).toFixed(0)}%`;
-
-    const maxShap = Math.max(...data.contributions.map(c => Math.abs(c.shap_value)));
-    const bars = data.contributions.map(c => {
-      const pct = maxShap > 0 ? (Math.abs(c.shap_value) / maxShap * 100).toFixed(1) : 0;
-      const cls = c.direction === "increases risk" ? "pos" : "neg";
-      return `<div class="bar-row">
-        <span class="bar-name">${c.feature}</span>
-        <div class="bar-track"><div class="bar-fill ${cls}" style="width:${pct}%"></div></div>
-        <span class="bar-val">${c.shap_value > 0 ? "+" : ""}${c.shap_value.toFixed(3)}</span>
-      </div>`;
-    }).join("");
-
-    document.getElementById("contributionBars").innerHTML = bars;
-  }
-
-  function showError(msg) {
-    const box = document.getElementById("errorBox");
-    box.textContent = msg;
-    box.style.display = "block";
   }
 </script>
 </body>
