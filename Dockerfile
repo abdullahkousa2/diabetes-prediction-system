@@ -13,7 +13,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 COPY app/ ./app/
 COPY run.py .
 COPY models/ ./models/
-
+COPY static/ ./static/
 EXPOSE 5000
 
 CMD ["python", "run.py"]
