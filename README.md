@@ -1,3 +1,13 @@
+---
+title: Diabetes Prediction System
+emoji: 🩺
+colorFrom: blue
+colorTo: green
+sdk: docker
+app_port: 5000
+pinned: false
+---
+
 # Diabetes Prediction System
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
