@@ -1,5 +1,7 @@
 from flask import Blueprint, jsonify
 from ..model_loader import get_model, get_scaler
+from flask import send_from_directory
+import os
 
 health_bp = Blueprint("health", __name__)
 
