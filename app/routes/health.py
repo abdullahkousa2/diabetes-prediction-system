@@ -5,6 +5,10 @@ import os
 
 health_bp = Blueprint("health", __name__)
 
+@health_bp.route("/")
+def index():
+    return send_from_directory(os.path.join(os.getcwd(), "static"), "interface.html")
+
 @health_bp.route("/health", methods=["GET"])
 def health():
     try:
