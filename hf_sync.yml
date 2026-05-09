@@ -1,0 +1,26 @@
+name: Sync to HF Spaces
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  sync:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Push to HF Spaces
+        env:
+          HF_TOKEN: ${{ secrets.HF_TOKEN }}
+        run: |
+          pip install huggingface_hub
+          python -c "
+          from huggingface_hub import HfApi
+          HfApi().upload_folder(
+              folder_path='.',
+              repo_id='Abdullah2026/Diabetes-Prediction',
+              repo_type='space',
+              token='$HF_TOKEN',
+              ignore_patterns=['.git', '__pycache__', '*.pyc', '.github']
+          )
+          "
