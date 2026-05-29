@@ -1,13 +1,3 @@
----
-title: Diabetes Prediction System
-emoji: 🩺
-colorFrom: blue
-colorTo: green
-sdk: docker
-app_port: 5000
-pinned: false
----
-
 # Diabetes Prediction System
 
 ![Python](https://img.shields.io/badge/Python-3.10-blue?logo=python)
@@ -18,6 +8,19 @@ pinned: false
 ![License](https://img.shields.io/badge/License-MIT-green)
 
 An end-to-end machine learning system for diabetes risk prediction. Covers the full pipeline from data preprocessing and model training through to a production-ready REST API with SHAP explainability and Docker deployment.
+
+---
+
+## Demo
+
+> Enter patient vitals → get a risk prediction (High / Moderate / Low) + SHAP breakdown showing which features pushed the score up or down.
+
+
+https://github.com/user-attachments/assets/f7baf55c-303c-40a6-92fc-2186de7aedc0
+
+
+<!-- Add a screenshot or GIF here: drag your demo image into the GitHub editor and it will upload automatically -->
+<!-- Example: ![Diabetes Demo](assets/demo.gif) -->
 
 ---
 
@@ -44,13 +47,24 @@ diabetes-prediction-system/
 │   └── plots/                        ← Confusion matrices, ROC curves, SHAP plots
 ├── static/
 │   └── interface.html                ← Browser-based test UI
-├── docs/
-│   └── diabetes_literature_review.pdf
 ├── Dockerfile
 ├── docker-compose.yml
 ├── requirements.txt
 └── run.py                            ← API entry point
 ```
+
+---
+
+## Model Results
+
+All models evaluated at threshold **0.40** (tuned to maximise recall on the diabetic class — catching missed cases matters more than false alarms in a medical context).
+
+| Model | Accuracy | ROC-AUC |
+|---|---|---|
+| XGBoost *(best, deployed)* | **93%** | **0.9896** |
+| Random Forest | 90% | 0.9810 |
+| Soft Voting Ensemble | 89% | 0.9824 |
+| MLP | 83% | 0.9298 |
 
 ---
 
@@ -154,51 +168,34 @@ curl -X POST http://localhost:5000/predict \
 
 ---
 
-## Dataset
-
-**Pima Indians Diabetes Dataset** — merged from two sources:
-
-| Feature                  | Description                          |
-|--------------------------|--------------------------------------|
-| Pregnancies              | Number of pregnancies                |
-| Glucose                  | Plasma glucose concentration         |
-| BloodPressure            | Diastolic blood pressure (mm Hg)     |
-| SkinThickness            | Triceps skinfold thickness (mm)      |
-| Insulin                  | 2-hour serum insulin (µU/ml)         |
-| BMI                      | Body mass index                      |
-| DiabetesPedigreeFunction | Diabetes pedigree function score     |
-| Age                      | Age in years                         |
-
----
-
-## Model Results
-
-Four models trained and compared — all with threshold **0.40** to maximise recall on the diabetic class:
-
-| Model                | Accuracy |
-|----------------------|----------|
-| Random Forest        | —        |
-| XGBoost *(best)*     | —        |
-| MLP                  | —        |
-| Soft Voting Ensemble | —        |
-
-Evaluation plots saved in `dataset/plots/`:
-- `roc_all_models.png` — ROC curve comparison
-- `cm_XGBoost.png`, `cm_Random_Forest.png`, `cm_MLP.png`, `cm_Soft_Ensemble.png`
-
----
-
 ## SHAP Explainability
 
 Global and per-patient explanations via `shap.TreeExplainer`:
 
-| Plot                | File                  | Description                        |
-|---------------------|-----------------------|------------------------------------|
-| Feature importance  | `shap_importance.png` | Global bar chart of feature impact |
-| Beeswarm            | `shap_beeswarm.png`   | Direction and magnitude per sample |
-| Patient explanation | `shap_patient_0.png`  | Force plot for individual patient  |
+| Plot | Description |
+|---|---|
+| Feature importance | Global bar chart — which features matter most across all patients |
+| Beeswarm | Direction and magnitude of each feature's impact per sample |
+| Patient explanation | Force plot for a single patient — why this specific score |
 
 The `/predict/explain` endpoint returns live SHAP contributions per request, with plain-language explanations in the browser UI.
+
+---
+
+## Dataset
+
+**Pima Indians Diabetes Dataset** — merged from two sources:
+
+| Feature | Description |
+|---|---|
+| Pregnancies | Number of pregnancies |
+| Glucose | Plasma glucose concentration |
+| BloodPressure | Diastolic blood pressure (mm Hg) |
+| SkinThickness | Triceps skinfold thickness (mm) |
+| Insulin | 2-hour serum insulin (µU/ml) |
+| BMI | Body mass index |
+| DiabetesPedigreeFunction | Diabetes pedigree function score |
+| Age | Age in years |
 
 ---
 
@@ -206,40 +203,33 @@ The `/predict/explain` endpoint returns live SHAP contributions per request, wit
 
 | Probability | Risk Level |
 |-------------|------------|
-| ≥ 70%       | High       |
-| 40% – 69%   | Moderate   |
-| < 40%       | Low        |
-
----
-
-## Input Field Ranges
-
-| Field                        | Type  | Min  | Max  |
-|------------------------------|-------|------|------|
-| `pregnancies`                | int   | 0    | 17   |
-| `glucose`                    | float | 50   | 250  |
-| `blood_pressure`             | float | 40   | 130  |
-| `skin_thickness`             | float | 0    | 100  |
-| `insulin`                    | float | 0    | 900  |
-| `bmi`                        | float | 10.0 | 70.0 |
-| `diabetes_pedigree_function` | float | 0.0  | 2.5  |
-| `age`                        | int   | 18   | 90   |
+| ≥ 70% | High |
+| 40% – 69% | Moderate |
+| < 40% | Low |
 
 ---
 
 ## Tech Stack
 
-| Component          | Technology                              |
-|--------------------|-----------------------------------------|
-| Language           | Python 3.10                             |
-| ML Models          | XGBoost, Random Forest, MLP (scikit-learn) |
-| Imbalance Handling | imbalanced-learn (SMOTE)                |
-| Explainability     | SHAP                                    |
-| API Framework      | Flask 3.0                               |
-| Containerisation   | Docker + Docker Compose                 |
+| Component | Technology |
+|---|---|
+| Language | Python 3.10 |
+| ML Models | XGBoost, Random Forest, MLP (scikit-learn) |
+| Imbalance Handling | imbalanced-learn (SMOTE) |
+| Explainability | SHAP |
+| API Framework | Flask 3.0 |
+| Containerisation | Docker + Docker Compose |
 
 ---
 
 ## License
 
-This project is licensed under the MIT License.
+MIT License — see [LICENSE](LICENSE).
+
+
+https://github.com/user-attachments/assets/8b10356a-f8e4-401c-9b47-1d13a2c710ec
+
+
+
+https://github.com/user-attachments/assets/24da2b45-bdec-4413-b946-8964462ce745
+
