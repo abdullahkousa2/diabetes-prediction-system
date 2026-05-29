@@ -227,9 +227,3 @@ The `/predict/explain` endpoint returns live SHAP contributions per request, wit
 MIT License — see [LICENSE](LICENSE).
 
 
-https://github.com/user-attachments/assets/8b10356a-f8e4-401c-9b47-1d13a2c710ec
-
-
-
-https://github.com/user-attachments/assets/24da2b45-bdec-4413-b946-8964462ce745
-
